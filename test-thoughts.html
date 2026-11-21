@@ -202,11 +202,11 @@
   /* Thoughts opening: PIVOT appears where the still point was */
   .hero .wrap { margin-top: 0; }
   @media (prefers-reduced-motion: no-preference) {
-    .hero .title span { animation-delay: 6.6s; }
-    .hero .title span:nth-child(2) { animation-delay: 6.72s; }
-    .hero .title span:nth-child(3) { animation-delay: 6.84s; }
-    .hero .title span:nth-child(4) { animation-delay: 6.96s; }
-    .hero .title span:nth-child(5) { animation-delay: 7.08s; }
+    .hero .title span { animation-delay: 8.9s; }
+    .hero .title span:nth-child(2) { animation-delay: 9.02s; }
+    .hero .title span:nth-child(3) { animation-delay: 9.14s; }
+    .hero .title span:nth-child(4) { animation-delay: 9.26s; }
+    .hero .title span:nth-child(5) { animation-delay: 9.38s; }
   }
 </style>
 </head>
@@ -393,7 +393,7 @@
     var seed = 11; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     var items = [];
     for (var k = 0; k < 30; k++) items.push({ p: phrases[k % phrases.length], r: 0.16 + 0.32 * rnd(), a: rnd() * 6.2832,
-      s: 0.75 + 0.7 * rnd(), f: 14 + 11 * rnd(), o: 0.45 + 0.5 * rnd(), j: 0.6 + 0.9 * rnd() });
+      s: 0.28 + 0.22 * rnd(), f: 14 + 11 * rnd(), o: 0.45 + 0.5 * rnd(), j: 0.6 + 0.9 * rnd() });
     function sm(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
     function bloom(k) {
       if (k <= 0) return;
@@ -404,14 +404,14 @@
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
     if (still) { bloom(1); return; }
-    var start = null, last = null, A = 4400, B = 5400, C = 7600;
+    var start = null, last = null, A = 6500, B = 7700, C = 10000;
     function frame(now) {
       if (start === null) { start = now; last = now; }
       var t = now - start, dt = Math.min(0.05, (now - last) / 1000); last = now;
       var sp, rf, al, out = 0;
-      if (t < A) { sp = 1 + 0.9 * (t / A); rf = 1 - 0.2 * sm(t / A); al = sm(t / 900); }
-      else if (t < B) { var u = (t - A) / (B - A); sp = 1.9 * Math.pow(1 - u, 2); rf = 0.8; al = 1 - 0.35 * sm(u); }
-      else { var v = (t - B) / (C - B); sp = -0.7 * sm(v * 2); out = sm(v); rf = 0.8 + 1.6 * out * out; al = 0.65 * (1 - sm(v * 1.15)); }
+      if (t < A) { sp = 1 + 0.4 * (t / A); rf = 1 - 0.2 * sm(t / A); al = sm(t / 900); }
+      else if (t < B) { var u = (t - A) / (B - A); sp = 1.4 * Math.pow(1 - u, 2); rf = 0.8; al = 1 - 0.35 * sm(u); }
+      else { var v = (t - B) / (C - B); sp = -0.35 * sm(v * 2); out = sm(v); rf = 0.8 + 1.6 * out * out; al = 0.65 * (1 - sm(v * 1.15)); }
       ctx.clearRect(0, 0, W, H);
       bloom(t < B ? 0 : sm((t - B) / 2400));
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -431,7 +431,7 @@
         ctx.save(); ctx.shadowColor = 'rgba(255,244,214,0.95)'; ctx.shadowBlur = 20 + 55 * pk;
         ctx.fillStyle = 'rgba(255,250,238,' + pa + ')'; ctx.beginPath(); ctx.arc(cx, cy, 5 + 6 * pk, 0, 6.2832); ctx.fill(); ctx.restore();
       }
-      if (t < 10000) requestAnimationFrame(frame);
+      if (t < 12500) requestAnimationFrame(frame);
     }
     window.addEventListener('resize', size);
     requestAnimationFrame(frame);
