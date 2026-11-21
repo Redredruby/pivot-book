@@ -253,7 +253,8 @@
         ctx.beginPath(); ctx.moveTo(sx(G.ax, G.ay), sy(G.ax, G.ay)); ctx.quadraticCurveTo(sx(c1x, c1y), sy(c1x, c1y), sx(e[0], e[1]), sy(e[0], e[1]));
         ctx.strokeStyle = rgba(T.amber, 0.14); ctx.lineWidth = 3.5; ctx.stroke();
         ctx.strokeStyle = rgba([250, 214, 160], 0.65); ctx.lineWidth = 1.1; ctx.stroke();
-        if (g < 1) glowDot(sx(e[0], e[1]), sy(e[0], e[1]), 2, 0.95);
+        var tx = sx(e[0], e[1]), ty = sy(e[0], e[1]), ta = g < 1 ? 1 : Math.exp(-(now - G.t0 - 600) / 700);
+        if (ta > 0.02) { glowDot(tx, ty, 7, 0.55 * ta); glowDot(tx, ty, 3.2, ta); ctx.fillStyle = 'rgba(255,255,250,' + ta.toFixed(3) + ')'; circle(tx, ty, 1.8); ctx.fill(); }
         else if (!G.sent) { G.sent = true; sparks.push({ G: G, t0: now }); }
       }
       for (i = sparks.length - 1; i >= 0; i--) {
@@ -268,7 +269,7 @@
         }
         glowDot(px, py, 2.4, 0.95);
       }
-      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) glowDot(mouse.x, mouse.y, 2.6, 0.5 * ma);
+      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) glowDot(mouse.x, mouse.y, 3.4, 0.7 * ma);
       ctx.restore();
       for (i = 0; i < grown.length; i++) { G = grown[i]; var kk = cl((now - G.t0 - 450) / 500); if (kk <= 0) continue; pearl(sx(G.bx, G.by), sy(G.bx, G.by), G.r * R * easeOutBack(kk, 1.1), T[G.col], Math.min(1, kk * 2)); }
     }
