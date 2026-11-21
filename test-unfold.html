@@ -179,6 +179,15 @@
     .hero .button { animation-delay: 7.3s; }
     @keyframes arrive { to { opacity: 1; } }
   }
+  /* Dark opening screen */
+  .hero { background: #1E2422; color: #E9EEEA; }
+  .hero .title { color: #EEF2EE; }
+  .hero .tagline { color: #B6C3BC; }
+  .hero .byline { color: #94A49C; }
+  .hero .button { background: transparent; border-color: #A8C2B5; color: #E9EEEA; }
+  .hero .button:hover { background: #A8C2B5; border-color: #A8C2B5; color: #1E2422; }
+  .unfold .form { stroke: #A8C2B5; }
+  .unfold .point { fill: #F4F7F3; }
 </style>
 </head>
 <body>
@@ -187,7 +196,7 @@
   <section class="hero">
     <div class="wrap">
       <svg class="unfold" viewBox="0 0 400 400" aria-hidden="true" focusable="false">
-        <defs><radialGradient id="light"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.45"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs>
+        <defs><radialGradient id="light"><stop offset="0" stop-color="#F3F1E6" stop-opacity="0.38"/><stop offset="0.5" stop-color="#DCE7DF" stop-opacity="0.12"/><stop offset="1" stop-color="#DCE7DF" stop-opacity="0"/></radialGradient></defs>
         <circle class="glow" cx="200" cy="200" r="0" fill="url(#light)"/>
         <g class="turn"><path class="form" d=""/></g>
         <circle class="point" cx="200" cy="200" r="4.5"/>
