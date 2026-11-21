@@ -158,6 +158,17 @@
   @media (max-width: 34rem) {
     .step { grid-template-columns: 3.5rem 1fr; }
   }
+
+  /* Pivot mark: a line turning on a point, then settling */
+  .pivot-mark { display: block; width: clamp(7rem, 18vw, 10rem); height: auto; margin: 0 0 2.5rem -0.5rem; overflow: visible; }
+  .pivot-mark .arm { stroke: var(--sage); stroke-width: 1.25; stroke-linecap: round; transform-origin: 100px 100px; transform: rotate(-28deg); }
+  .pivot-mark .point { fill: var(--sage-deep); }
+  @media (prefers-reduced-motion: no-preference) {
+    .pivot-mark .arm { transform: rotate(0deg); animation: turn 4.5s cubic-bezier(.45,.05,.25,1) 0.9s forwards; }
+    .pivot-mark .point { opacity: 0; animation: appear 0.8s ease 0.2s forwards; }
+    @keyframes turn { 0% { transform: rotate(0deg); } 55% { transform: rotate(-34deg); } 100% { transform: rotate(-28deg); } }
+    @keyframes appear { to { opacity: 1; } }
+  }
 </style>
 </head>
 <body>
@@ -165,6 +176,7 @@
 <main>
   <section class="hero">
     <div class="wrap">
+      <svg class="pivot-mark" viewBox="0 0 200 200" aria-hidden="true" focusable="false"><line class="arm" x1="12" y1="100" x2="188" y2="100"/><circle class="point" cx="100" cy="100" r="3.5"/></svg>
       <h1 class="title" aria-label="PIVOT"><span aria-hidden="true">P</span><span aria-hidden="true">I</span><span aria-hidden="true">V</span><span aria-hidden="true">O</span><span aria-hidden="true">T</span></h1>
       <p class="tagline">The Art of Moving Beyond Our Familiar Selves</p>
       <p class="byline">By Rebecca A. Tavangar</p>
