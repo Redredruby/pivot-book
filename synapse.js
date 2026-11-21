@@ -205,8 +205,8 @@
         var u = cl((e - i * 180) / 1500); if (u <= 0) continue;
         var k = easeOutBack(u), x = cx + (xs[i] - cx) * k, y = cy + TF * 0.25 + (yT - cy - TF * 0.25) * k, s = 0.06 + 0.94 * Math.min(1, k);
         ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-        ctx.font = font; ctx.shadowColor = 'rgba(255,244,214,' + (0.35 + 0.5 * (1 - u)).toFixed(3) + ')'; ctx.shadowBlur = 24;
-        ctx.fillStyle = 'rgba(240,244,240,' + Math.min(1, u * 1.6).toFixed(3) + ')'; ctx.fillText('PIVOT'[i], 0, 0); ctx.restore();
+        var lg = LG[i]; ctx.font = font; ctx.shadowColor = 'rgba(255,236,190,' + Math.min(1, 0.35 + 0.5 * (1 - u) + 0.65 * lg).toFixed(3) + ')'; ctx.shadowBlur = 24 + 46 * lg;
+        ctx.fillStyle = 'rgba(' + (240 + 15 * lg | 0) + ',' + (244 + 4 * lg | 0) + ',' + (240 - 22 * lg | 0) + ',' + Math.min(1, u * 1.6).toFixed(3) + ')'; ctx.fillText('PIVOT'[i], 0, 0); ctx.restore();
       }
     }
     function dot(rad, blur, a) {
@@ -217,44 +217,60 @@
     function bloomFade(t) { return t < DIM0 ? 1 : 1 - 0.45 * sm((t - DIM0) / (DIM1 - DIM0)); }
     function drawStill() { ctx.clearRect(0, 0, W, H); drawBloom(99999, 0, 0.55); wash(1); drawLetters(99999); hero.classList.add('subs'); }
     var visible = true, waiting = false, start = null, last = null;
-    var mouse = { x: -1e4, y: -1e4, t: -1e9 }, trail = [], links = [], lastLink = 0;
+    var LG = [0, 0, 0, 0, 0], grown = [], sparks = [], lastGrow = 0, lastPt = null, mouse = { x: -1e4, y: -1e4, t: -1e9 };
+    function toUnit(px, py) { var dx = (px - cx) / (R * brth), dy = (py - cy) / (R * brth * 0.9), c = Math.cos(-rot), s = Math.sin(-rot); return [dx * c - dy * s, dx * s + dy * c]; }
+    function letterPos(i) { var xs = pivotXs('200 ' + TF.toFixed(0) + 'px Spectral, Georgia, serif', TF * 0.14); return [xs[i], cy - TF * 0.08]; }
+    function nodes() { var out = [], i; for (i = 0; i < segs.length; i++) out.push([segs[i].x1, segs[i].y1]); for (i = 0; i < grown.length; i++) out.push([grown[i].bx, grown[i].by]); return out; }
     function onMove(e) {
-      var pt = e.touches ? e.touches[0] : e; if (!pt) return;
+      var pt = e.touches ? e.touches[0] : e; if (!pt || start === null) return;
       var rc = cv.getBoundingClientRect(), px = pt.clientX - rc.left, py = pt.clientY - rc.top, now = performance.now();
       mouse.x = px; mouse.y = py; mouse.t = now;
-      trail.push({ x: px, y: py, t: now }); if (trail.length > 50) trail.shift();
-      if (now - lastLink > 110 && start !== null) {
-        lastLink = now; var best = -1, bd = 1e9;
-        for (var i = 0; i < cells.length; i++) {
-          var c = cells[i]; if (now - start - BL < c.b) continue;
-          var dx = sx(c.x, c.y) - px, dy = sy(c.x, c.y) - py, d = dx * dx + dy * dy;
-          if (d < bd) { bd = d; best = i; }
-        }
-        if (best >= 0 && Math.sqrt(bd) < R * 0.75) { links.push({ c: best, x: px, y: py, t: now, bend: (Math.random() - 0.5) * 0.5 }); cells[best].flash = now; }
-      }
+      if (now - start < BL + 1500 || now - lastGrow < 160) return;
+      if (lastPt && Math.hypot(px - lastPt[0], py - lastPt[1]) < R * 0.06) return;
+      var u = toUnit(px, py), ns = nodes(), best = null, bd = 1e9;
+      for (var i = 0; i < ns.length; i++) { var d = Math.hypot(ns[i][0] - u[0], ns[i][1] - u[1]); if (d < bd) { bd = d; best = ns[i]; } }
+      if (!best || bd < 0.04) return;
+      var len = Math.min(bd, 0.22), ang = Math.atan2(u[1] - best[1], u[0] - best[0]);
+      var bx = best[0] + Math.cos(ang) * len, by = best[1] + Math.sin(ang) * len;
+      var li = 0, ldb = 1e9; for (var k = 0; k < 5; k++) { var lp = letterPos(k), dd = Math.abs(lp[0] - px); if (dd < ldb) { ldb = dd; li = k; } }
+      grown.push({ ax: best[0], ay: best[1], bx: bx, by: by, bd: (Math.random() - 0.5) * 0.5, t0: now, li: li, col: ['teal', 'lav', 'rose', 'blue'][grown.length % 4], sent: false, r: 0.012 + 0.016 * Math.random() });
+      if (grown.length > 70) grown.shift();
+      lastGrow = now; lastPt = [px, py];
     }
     hero.addEventListener('pointermove', onMove);
     hero.addEventListener('touchmove', onMove, { passive: true });
+    function qpt(x0, y0, mx, my, x1, y1, p) { var a = (1 - p) * (1 - p), b = 2 * (1 - p) * p, c = p * p; return [a * x0 + b * mx + c * x1, a * y0 + b * my + c * y1]; }
+    var lastMouseFrame = 0;
     function drawMouse(now) {
+      var dt = lastMouseFrame ? Math.min(0.05, (now - lastMouseFrame) / 1000) : 0; lastMouseFrame = now;
+      for (var k = 0; k < 5; k++) LG[k] *= Math.exp(-dt / 1.1);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-      for (var i = 1; i < trail.length; i++) {
-        var p = trail[i - 1], q = trail[i], a = Math.exp(-(now - q.t) / 450); if (a < 0.02) continue;
-        ctx.strokeStyle = rgba(T.amber, 0.55 * a); ctx.lineWidth = 0.6 + 2.4 * a;
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+      var i, g, G;
+      for (i = 0; i < grown.length; i++) {
+        G = grown[i]; g = easeOutCubic((now - G.t0) / 600);
+        var mx = (G.ax + G.bx) / 2 - (G.by - G.ay) * G.bd, my = (G.ay + G.by) / 2 + (G.bx - G.ax) * G.bd;
+        var e = qpt(G.ax, G.ay, mx, my, G.bx, G.by, g), c1x = G.ax + (mx - G.ax) * g, c1y = G.ay + (my - G.ay) * g;
+        ctx.beginPath(); ctx.moveTo(sx(G.ax, G.ay), sy(G.ax, G.ay)); ctx.quadraticCurveTo(sx(c1x, c1y), sy(c1x, c1y), sx(e[0], e[1]), sy(e[0], e[1]));
+        ctx.strokeStyle = rgba(T.amber, 0.14); ctx.lineWidth = 3.5; ctx.stroke();
+        ctx.strokeStyle = rgba([250, 214, 160], 0.65); ctx.lineWidth = 1.1; ctx.stroke();
+        if (g < 1) glowDot(sx(e[0], e[1]), sy(e[0], e[1]), 2, 0.95);
+        else if (!G.sent) { G.sent = true; sparks.push({ G: G, t0: now }); }
       }
-      for (i = links.length - 1; i >= 0; i--) {
-        var L = links[i], age = now - L.t; if (age > 1500) { links.splice(i, 1); continue; }
-        var c = cells[L.c], x0 = sx(c.x, c.y), y0 = sy(c.x, c.y);
-        var mx = (x0 + L.x) / 2 + (L.y - y0) * L.bend, my = (y0 + L.y) / 2 - (L.x - x0) * L.bend;
-        var g = easeOutCubic(age / 380), fa = 1 - sm((age - 500) / 1000);
-        var ex = (1 - g) * (1 - g) * x0 + 2 * (1 - g) * g * mx + g * g * L.x, ey = (1 - g) * (1 - g) * y0 + 2 * (1 - g) * g * my + g * g * L.y;
-        ctx.strokeStyle = rgba([250, 214, 160], 0.6 * fa); ctx.lineWidth = 1.3;
-        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(x0 + (mx - x0) * g, y0 + (my - y0) * g, ex, ey); ctx.stroke();
-        var u = cl(age / 650), spx = (1 - u) * (1 - u) * L.x + 2 * (1 - u) * u * mx + u * u * x0, spy = (1 - u) * (1 - u) * L.y + 2 * (1 - u) * u * my + u * u * y0;
-        if (u < 1) glowDot(spx, spy, 2.3, 0.95 * fa);
+      for (i = sparks.length - 1; i >= 0; i--) {
+        var S = sparks[i], age = now - S.t0; G = S.G;
+        var mx2 = (G.ax + G.bx) / 2 - (G.by - G.ay) * G.bd, my2 = (G.ay + G.by) / 2 + (G.bx - G.ax) * G.bd, px, py;
+        if (age < 420) { var q = qpt(G.bx, G.by, mx2, my2, G.ax, G.ay, age / 420); px = sx(q[0], q[1]); py = sy(q[0], q[1]); }
+        else {
+          var u2 = cl((age - 420) / 650), a0x = sx(G.ax, G.ay), a0y = sy(G.ax, G.ay), lp = letterPos(G.li);
+          var cmx = (a0x + lp[0]) / 2 + (lp[1] - a0y) * 0.25, cmy = (a0y + lp[1]) / 2 - (lp[0] - a0x) * 0.25;
+          if (u2 >= 1) { LG[G.li] = Math.min(1, LG[G.li] + 0.45); sparks.splice(i, 1); continue; }
+          var q2 = qpt(a0x, a0y, cmx, cmy, lp[0], lp[1], easeOutCubic(u2)); px = q2[0]; py = q2[1];
+        }
+        glowDot(px, py, 2.4, 0.95);
       }
-      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) glowDot(mouse.x, mouse.y, 3.2, 0.7 * ma);
+      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) glowDot(mouse.x, mouse.y, 2.6, 0.5 * ma);
       ctx.restore();
+      for (i = 0; i < grown.length; i++) { G = grown[i]; var kk = cl((now - G.t0 - 450) / 500); if (kk <= 0) continue; pearl(sx(G.bx, G.by), sy(G.bx, G.by), G.r * R * easeOutBack(kk, 1.1), T[G.col], Math.min(1, kk * 2)); }
     }
     function frame(now) {
       if (!visible) { waiting = true; return; }
