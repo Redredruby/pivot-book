@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIVOT: The Art of Moving Beyond Our Familiar Selves</title>
+<meta name="description" content="PIVOT introduces the PIVOT Method, a neurobiologically informed emotional regulation framework in five steps: Pause, Identify, Validate, Orient, Transcend. By Rebecca A. Tavangar.">
+<meta property="og:title" content="PIVOT: The Art of Moving Beyond Our Familiar Selves">
+<meta property="og:description" content="How much of who we think we are comes from the ways we have learned to respond? A book by Rebecca A. Tavangar.">
+<meta property="og:type" content="book">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500&family=Spectral:ital,wght@0,200;0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F5F7F4;
+    --mist: #EAEEEA;
+    --line: #D6DDD8;
+    --ink: #26302C;
+    --muted: #5B6862;
+    --sage: #6B857A;
+    --sage-deep: #4C6359;
+    --serif: "Spectral", Georgia, serif;
+    --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --measure: 36rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  strong, b { font-weight: inherit; }
+  cite { font-style: italic; }
+  a { color: var(--sage-deep); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  a:hover { color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--sage); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { width: min(100% - 3rem, 60rem); margin-inline: auto; }
+  .text { max-width: var(--measure); }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 300; margin: 0; color: var(--ink); }
+  h2 { font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem); line-height: 1.2; letter-spacing: -0.005em; margin-bottom: 1.5rem; }
+  p { margin: 0 0 1.1em; }
+  p:last-child { margin-bottom: 0; }
+
+  section { padding-block: clamp(4.5rem, 10vw, 8rem); }
+  section + section { border-top: 1px solid var(--line); }
+
+  /* Hero */
+  .hero { padding-block: clamp(5rem, 14vw, 10rem) clamp(4.5rem, 10vw, 7.5rem); }
+  .title {
+    font-size: clamp(4.5rem, 2rem + 13vw, 10.5rem);
+    font-weight: 200;
+    line-height: 0.9;
+    letter-spacing: 0.14em;
+    margin-left: -0.06em;
+    display: flex;
+  }
+  .title span { display: inline-block; }
+  .tagline {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.6rem);
+    line-height: 1.4;
+    color: var(--muted);
+    margin: 2rem 0 2.75rem;
+    max-width: 30rem;
+  }
+  .byline { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  .button {
+    display: inline-block;
+    font: inherit;
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--sage-deep);
+    border: 1px solid var(--sage-deep);
+    border-radius: 999px;
+    padding: 0.8rem 1.6rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .button:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  /* About the book */
+  .about .text p:first-of-type { font-family: var(--serif); font-size: 1.3rem; line-height: 1.6; font-weight: 300; }
+
+  /* Method */
+  .method-intro { margin-bottom: clamp(3rem, 6vw, 4.5rem); }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: clamp(4rem, 10vw, 7rem) 1fr;
+    gap: 0 clamp(1.25rem, 4vw, 3rem);
+    padding-block: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .step:last-child { border-bottom: 1px solid var(--line); }
+  .letter {
+    font-family: var(--serif);
+    font-weight: 200;
+    font-size: clamp(3rem, 2rem + 4vw, 4.75rem);
+    line-height: 0.85;
+    color: var(--sage);
+  }
+  .step h3 { font-size: 1.5rem; line-height: 1.3; margin-bottom: 0.5rem; }
+  .step p { color: var(--muted); max-width: 32rem; }
+
+  /* Author */
+  .author { background: var(--mist); border-top: 0; }
+  section.author + section { border-top: 0; }
+  .credentials { color: var(--muted); font-size: 0.95rem; margin: -0.75rem 0 1.75rem; }
+
+  /* Signup */
+  form { margin-top: 2rem; max-width: 30rem; }
+  .field { margin-bottom: 1.25rem; }
+  label { display: block; font-size: 0.92rem; color: var(--muted); margin-bottom: 0.4rem; }
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.75rem 0.9rem;
+  }
+  input:focus { border-color: var(--sage); outline: none; box-shadow: 0 0 0 3px rgba(107, 133, 122, 0.2); }
+  .hp { position: absolute; left: -9999px; }
+  .form-note { font-size: 0.88rem; color: var(--muted); margin-top: 1rem; }
+  .status { margin-top: 1.25rem; font-size: 0.98rem; min-height: 1.5em; }
+  .status.ok { color: var(--sage-deep); }
+  .status.err { color: #8A4B45; }
+
+  /* Contact */
+  .contact-list { display: grid; grid-template-columns: max-content 1fr; gap: 0.75rem 2rem; margin: 0; }
+  .contact-list dt { color: var(--muted); font-size: 0.95rem; }
+  .contact-list dd { margin: 0; }
+
+  footer { padding-block: 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.88rem; }
+
+  /* One page-load moment: the five letters settle in sequence */
+  @media (prefers-reduced-motion: no-preference) {
+    .title span { opacity: 0; transform: translateY(0.12em); animation: settle 0.9s cubic-bezier(.2,.7,.2,1) forwards; }
+    .title span:nth-child(2) { animation-delay: 0.12s; }
+    .title span:nth-child(3) { animation-delay: 0.24s; }
+    .title span:nth-child(4) { animation-delay: 0.36s; }
+    .title span:nth-child(5) { animation-delay: 0.48s; }
+    @keyframes settle { to { opacity: 1; transform: none; } }
+  }
+
+  @media (max-width: 34rem) {
+    .contact-list { grid-template-columns: 1fr; gap: 0.15rem; }
+    .contact-list dd { margin-bottom: 0.9rem; }
+    .step { grid-template-columns: 3.5rem 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <h1 class="title" aria-label="PIVOT"><span aria-hidden="true">P</span><span aria-hidden="true">I</span><span aria-hidden="true">V</span><span aria-hidden="true">O</span><span aria-hidden="true">T</span></h1>
+      <p class="tagline">The Art of Moving Beyond Our Familiar Selves</p>
+      <p class="byline">By Rebecca A. Tavangar</p>
+      <a class="button" href="#updates">Sign up for release updates</a>
+    </div>
+  </section>
+
+  <section class="about" aria-labelledby="about-heading">
+    <div class="wrap">
+      <div class="text">
+        <h2 id="about-heading">About the book</h2>
+        <p>How much of who we think we are comes from the ways we have learned to respond? We withdraw when hurt, defend ourselves when criticized, or set aside our needs to avoid disappointing someone. In time, these familiar emotional reactions can become an account of ourselves that we rarely question. <cite>PIVOT: The Art of Moving Beyond Our Familiar Selves</cite> opens that account to further discovery.</p>
+        <p>Drawing on her work as a clinician, psychological research, and contemplative and spiritual perspectives, Rebecca A. Tavangar offers five movements of attention: Pause, Identify, Validate, Orient, and Transcend. Through them, we learn to recognize and understand what we feel while becoming more available to the people, circumstances, and possibilities before us. We may find ourselves able to speak honestly where we have always kept the peace, receive care when we are accustomed to managing alone, or pursue an interest we had assumed was beyond us.</p>
+        <p>Written for readers who recognize their reactions yet struggle to respond differently, <cite>PIVOT</cite> offers stories, reflection, and brief practices rooted in ordinary life. Its invitation is to approach ourselves with enough understanding to recognize a choice, and enough curiosity to discover where that choice might lead. What begins in a difficult moment can gradually change our sense of who we are and who we might become.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="method" aria-labelledby="method-heading">
+    <div class="wrap">
+      <div class="text method-intro">
+        <h2 id="method-heading">The PIVOT Method</h2>
+        <p>The method arranges established findings from neuroscience into a sequence that can be learned and repeated. Each step builds on the one before it, moving from the body's first response toward a wider and more grounded view of what is happening.</p>
+      </div>
+      <ol class="steps">
+        <li class="step">
+          <span class="letter" aria-hidden="true">P</span>
+          <div>
+            <h3>Pause</h3>
+            <p>Interrupt the momentum of reaction long enough for the body to register what is happening, opening a small space between the feeling and the response.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="letter" aria-hidden="true">I</span>
+          <div>
+            <h3>Identify</h3>
+            <p>Name what is arising, both as sensation in the body and in words, with enough precision that the feeling becomes something you can observe and understand.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="letter" aria-hidden="true">V</span>
+          <div>
+            <h3>Validate</h3>
+            <p>Recognize the feeling as a meaningful signal from a nervous system doing its work, and meet it with acceptance and compassion.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="letter" aria-hidden="true">O</span>
+          <div>
+            <h3>Orient</h3>
+            <p>Turn attention toward the present moment and your surroundings, helping the nervous system register safety and settle into a steadier state.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="letter" aria-hidden="true">T</span>
+          <div>
+            <h3>Transcend</h3>
+            <p>Move beyond the immediate reaction toward a broader perspective, where the feeling can be held within a larger sense of meaning and purpose.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="author" aria-labelledby="author-heading">
+    <div class="wrap">
+      <div class="text">
+        <h2 id="author-heading">About the author</h2>
+        <p>Rebecca Tavangar is a licensed professional counselor whose work focuses on trauma, nervous system regulation, and the meeting point of spirituality and psychology.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="updates" id="updates" aria-labelledby="updates-heading">
+    <div class="wrap">
+      <div class="text">
+        <h2 id="updates-heading">Release updates</h2>
+        <p>Leave your email address and you will hear from Rebecca when PIVOT is available.</p>
+        <form id="signup" action="https://formsubmit.co/Rebecca.tavangar@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="New PIVOT release update signup">
+          <input type="hidden" name="_template" value="table">
+          <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="field">
+            <label for="name">Name (optional)</label>
+            <input type="text" id="name" name="name" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+          </div>
+          <button class="button" type="submit">Sign up for updates</button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <p class="form-note">Your address is used only for news about the book.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" aria-labelledby="contact-heading">
+    <div class="wrap">
+      <div class="text">
+        <h2 id="contact-heading">Contact</h2>
+        <dl class="contact-list">
+          <dt>Name</dt>
+          <dd>Rebecca Tavangar</dd>
+          <dt>Email</dt>
+          <dd><a href="mailto:Rebecca.tavangar@gmail.com">Rebecca.tavangar@gmail.com</a></dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Rebecca Tavangar. PIVOT™ Method.</div>
+</footer>
+
+<script>
+  (function () {
+    var form = document.getElementById('signup');
+    var status = document.getElementById('status');
+    if (!form || !window.fetch) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (form._honey.value) return;
+      var button = form.querySelector('button');
+      button.disabled = true;
+      status.className = 'status';
+      status.textContent = 'Signing you up…';
+      fetch('https://formsubmit.co/ajax/Rebecca.tavangar@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          _subject: 'New PIVOT release update signup',
+          _template: 'table'
+        })
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (res.ok && String(res.d.success) === 'true') {
+            form.reset();
+            status.className = 'status ok';
+            status.textContent = 'Thank you. You are signed up and will hear when PIVOT is released.';
+          } else { throw new Error(); }
+        })
+        .catch(function () {
+          status.className = 'status err';
+          status.innerHTML = 'Your signup did not go through. Please try again, or write to <a href="mailto:Rebecca.tavangar@gmail.com?subject=PIVOT%20release%20updates">Rebecca.tavangar@gmail.com</a> to be added.';
+        })
+        .finally(function () { button.disabled = false; });
+    });
+  })();
+</script>
+</body>
+</html>
