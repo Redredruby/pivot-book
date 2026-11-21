@@ -212,6 +212,10 @@
   .i-by { transition-delay: 0.9s; }
   .hero.subs .i-sub, .hero.subs .i-by { clip-path: inset(0 0 0 0); transform: none; opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .i-sub, .i-by { transition: none; } }
+  .i-when { color: #8FA097; font-size: 0.85rem; letter-spacing: 0.18em; text-transform: uppercase; margin: 1.1rem 0 0; clip-path: inset(0 0 100% 0); transform: translateY(-10px); opacity: 0;
+    transition: clip-path 1.6s cubic-bezier(.4,0,.2,1) 1.7s, transform 1.6s cubic-bezier(.4,0,.2,1) 1.7s, opacity 1.2s ease 1.7s; }
+  .hero.subs .i-when { clip-path: inset(0 0 0 0); transform: none; opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .i-when { transition: none; } }
 </style>
 </head>
 <body>
@@ -222,6 +226,7 @@
     <div class="intro-sub">
       <p class="i-sub">The Art of Moving Beyond Our Familiar Selves</p>
       <p class="i-by">By Rebecca A. Tavangar</p>
+      <p class="i-when">Forthcoming 2027</p>
     </div>
     <div class="wrap">
       <h1 class="title" aria-label="PIVOT"><span aria-hidden="true">P</span><span aria-hidden="true">I</span><span aria-hidden="true">V</span><span aria-hidden="true">O</span><span aria-hidden="true">T</span></h1>
