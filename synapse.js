@@ -187,7 +187,7 @@
     function wash(w) {
       if (w <= 0) return;
       var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, TF * 3.4);
-      g.addColorStop(0, 'rgba(26,32,30,' + (0.6 * w).toFixed(3) + ')'); g.addColorStop(0.6, 'rgba(26,32,30,' + (0.35 * w).toFixed(3) + ')'); g.addColorStop(1, 'rgba(26,32,30,0)');
+      g.addColorStop(0, 'rgba(26,32,30,' + (0.32 * w).toFixed(3) + ')'); g.addColorStop(0.6, 'rgba(26,32,30,' + (0.16 * w).toFixed(3) + ')'); g.addColorStop(1, 'rgba(26,32,30,0)');
       ctx.save(); ctx.translate(cx, cy); ctx.scale(1.6, 1); ctx.translate(-cx, -cy);
       ctx.fillStyle = g; ctx.fillRect(cx - TF * 3.4, cy - TF * 3.4, TF * 6.8, TF * 6.8); ctx.restore();
     }
@@ -214,10 +214,10 @@
       ctx.fillStyle = 'rgba(255,250,238,' + a + ')'; circle(cx, cy, rad); ctx.fill(); ctx.restore();
     }
     var BL = 600, D = BL + 2700, DIM0 = D - 300, DIM1 = D + 1500, SUBS = D + 2100;
-    function bloomFade(t) { return t < DIM0 ? 1 : 1 - 0.45 * sm((t - DIM0) / (DIM1 - DIM0)); }
-    function drawStill() { ctx.clearRect(0, 0, W, H); drawBloom(99999, 0, 0.55); wash(1); drawLetters(99999); hero.classList.add('subs'); }
+    function bloomFade(t) { return t < DIM0 ? 1 : 1 - 0.12 * sm((t - DIM0) / (DIM1 - DIM0)); }
+    function drawStill() { ctx.clearRect(0, 0, W, H); drawBloom(99999, 0, 0.88); wash(1); drawLetters(99999); hero.classList.add('subs'); }
     var visible = true, waiting = false, start = null, last = null;
-    var LG = [0, 0, 0, 0, 0], grown = [], sparks = [], lastGrow = 0, lastPt = null, mouse = { x: -1e4, y: -1e4, t: -1e9 };
+    var trail = [], LG = [0, 0, 0, 0, 0], grown = [], sparks = [], lastGrow = 0, lastPt = null, mouse = { x: -1e4, y: -1e4, t: -1e9 };
     function toUnit(px, py) { var dx = (px - cx) / (R * brth), dy = (py - cy) / (R * brth * 0.9), c = Math.cos(-rot), s = Math.sin(-rot); return [dx * c - dy * s, dx * s + dy * c]; }
     function letterPos(i) { var xs = pivotXs('200 ' + TF.toFixed(0) + 'px Spectral, Georgia, serif', TF * 0.14); return [xs[i], cy - TF * 0.08]; }
     function nodes() { var out = [], i; for (i = 0; i < segs.length; i++) out.push([segs[i].x1, segs[i].y1]); for (i = 0; i < grown.length; i++) out.push([grown[i].bx, grown[i].by]); return out; }
@@ -225,6 +225,7 @@
       var pt = e.touches ? e.touches[0] : e; if (!pt || start === null) return;
       var rc = cv.getBoundingClientRect(), px = pt.clientX - rc.left, py = pt.clientY - rc.top, now = performance.now();
       mouse.x = px; mouse.y = py; mouse.t = now;
+      trail.push({ x: px, y: py, t: now }); if (trail.length > 60) trail.shift();
       if (now - start < BL + 1500 || now - lastGrow < 160) return;
       if (lastPt && Math.hypot(px - lastPt[0], py - lastPt[1]) < R * 0.06) return;
       var u = toUnit(px, py), ns = nodes(), best = null, bd = 1e9;
@@ -246,6 +247,12 @@
       for (var k = 0; k < 5; k++) LG[k] *= Math.exp(-dt / 1.1);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
       var i, g, G;
+      for (i = 1; i < trail.length; i++) {
+        var tp = trail[i - 1], tq = trail[i], ta0 = Math.exp(-(now - tq.t) / 650); if (ta0 < 0.02) continue;
+        ctx.strokeStyle = rgba(T.amber, 0.35 * ta0); ctx.lineWidth = 2 + 7 * ta0; ctx.beginPath(); ctx.moveTo(tp.x, tp.y); ctx.lineTo(tq.x, tq.y); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,248,230,' + (0.9 * ta0).toFixed(3) + ')'; ctx.lineWidth = 0.8 + 2.2 * ta0; ctx.stroke();
+      }
+      if (now - mouse.t < 300) { for (var h = 0; h < 5; h++) { var hp = letterPos(h); if (Math.abs(hp[0] - mouse.x) < TF * 0.45 && Math.abs(hp[1] - mouse.y) < TF * 0.6) LG[h] = Math.max(LG[h], 0.85); } }
       for (i = 0; i < grown.length; i++) {
         G = grown[i]; g = easeOutCubic((now - G.t0) / 600);
         var mx = (G.ax + G.bx) / 2 - (G.by - G.ay) * G.bd, my = (G.ay + G.by) / 2 + (G.bx - G.ax) * G.bd;
@@ -269,7 +276,7 @@
         }
         glowDot(px, py, 2.4, 0.95);
       }
-      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) glowDot(mouse.x, mouse.y, 3.4, 0.7 * ma);
+      var ma = Math.exp(-(now - mouse.t) / 1400); if (ma > 0.02) { glowDot(mouse.x, mouse.y, 9, 0.45 * ma); glowDot(mouse.x, mouse.y, 3.6, ma); }
       ctx.restore();
       for (i = 0; i < grown.length; i++) { G = grown[i]; var kk = cl((now - G.t0 - 450) / 500); if (kk <= 0) continue; pearl(sx(G.bx, G.by), sy(G.bx, G.by), G.r * R * easeOutBack(kk, 1.1), T[G.col], Math.min(1, kk * 2)); }
     }
@@ -279,11 +286,11 @@
       var t = now - start; last = now;
       ctx.clearRect(0, 0, W, H);
       drawBloom(t - BL, now, bloomFade(t));
-      drawMouse(now);
       var burst = Math.exp(-Math.pow((t - BL) / 300, 2));
       var da = t < BL + 300 ? Math.min(1, t / 400) : Math.max(0, 1 - (t - BL - 300) / 700);
       if (da > 0) dot(5 + 10 * burst, 20 + 70 * burst, da);
       wash(t > D - 500 ? sm((t - D + 500) / 1600) : 0);
+      drawMouse(now);
       if (t > D) drawLetters(t - D);
       if (t > SUBS && !hero.classList.contains('subs')) hero.classList.add('subs');
       requestAnimationFrame(frame);
