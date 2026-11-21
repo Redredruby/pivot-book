@@ -27,7 +27,7 @@
     function easeOutBack(u, c1) { u = cl(u); c1 = c1 || 1.3; var c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); }
 
     /* The bloom: a living form that buds outward from the still point */
-    var T = { teal: [120, 178, 206], blue: [98, 142, 200], rose: [230, 162, 184], lav: [198, 172, 226], amber: [238, 190, 124], peach: [255, 214, 196] };
+    var T = { teal: [40, 205, 235], blue: [60, 115, 255], rose: [255, 95, 160], lav: [170, 110, 255], amber: [255, 185, 70], peach: [255, 165, 130] };
     /* A neural bloom: branches grow outward from the still point like dendrites, with living cells at their tips */
     var segs = [], ends = [[], [], [], [], []], cells = [], cellBySeg = {}, tipChains = [];
     (function build() {
@@ -73,13 +73,13 @@
     }
     function bubble(x, y, r, c, a) {
       var g = ctx.createRadialGradient(x - r * 0.2, y - r * 0.25, r * 0.05, x, y, r);
-      g.addColorStop(0, rgba(c, 0.07 * a)); g.addColorStop(0.7, rgba(c, 0.16 * a)); g.addColorStop(0.94, rgba(c, 0.48 * a)); g.addColorStop(1, rgba(c, 0));
+      g.addColorStop(0, rgba(c, 0.14 * a)); g.addColorStop(0.7, rgba(c, 0.32 * a)); g.addColorStop(0.94, rgba(c, 0.85 * a)); g.addColorStop(1, rgba(c, 0));
       ctx.fillStyle = g; circle(x, y, r); ctx.fill();
-      ctx.lineWidth = Math.max(0.8, r * 0.05); ctx.strokeStyle = rgba(T.amber, 0.55 * a); circle(x, y, r * 0.97); ctx.stroke();
+      ctx.lineWidth = Math.max(0.8, r * 0.05); ctx.strokeStyle = rgba(T.amber, 0.85 * a); circle(x, y, r * 0.97); ctx.stroke();
       hilite(x, y, r, a);
     }
     function pearl(x, y, r, c, a) {
-      var lc = [c[0] + 70, c[1] + 70, c[2] + 70], dc = [c[0] * 0.4, c[1] * 0.4, c[2] * 0.4];
+      var lc = [Math.min(255, c[0] + 60), Math.min(255, c[1] + 60), Math.min(255, c[2] + 60)], dc = [c[0] * 0.3, c[1] * 0.3, c[2] * 0.3];
       var g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.05, x, y, r);
       g.addColorStop(0, rgba(lc, 0.95 * a)); g.addColorStop(0.55, rgba(c, 0.88 * a)); g.addColorStop(1, rgba(dc, 0.85 * a));
       ctx.fillStyle = g; circle(x, y, r); ctx.fill();
@@ -89,7 +89,7 @@
     function floret(x, y, r, c, a, time, rings) {
       rings = rings || 6;
       var g = ctx.createRadialGradient(x, y, 0, x, y, r * 1.2);
-      g.addColorStop(0, rgba(c, 0.4 * a)); g.addColorStop(0.6, rgba(c, 0.18 * a)); g.addColorStop(1, rgba(c, 0));
+      g.addColorStop(0, rgba(c, 0.65 * a)); g.addColorStop(0.6, rgba(c, 0.3 * a)); g.addColorStop(1, rgba(c, 0));
       ctx.fillStyle = g; circle(x, y, r * 1.2); ctx.fill();
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       ctx.strokeStyle = rgba(T.amber, 0.4 * a); ctx.lineWidth = Math.max(0.6, r * 0.014);
@@ -101,7 +101,7 @@
       for (var j = 1; j <= rings; j++) {
         var rr = r * (0.06 + j * 0.86 / rings), n = 5 + j * Math.round(42 / rings), dir = j % 2 ? 1 : -1;
         var rot = dir * time * 0.00016 * (1 + j * 0.1), ds = Math.max(0.6, r * 0.032 * (1.15 - j * 0.5 / rings));
-        var col = j % 3 === 0 ? T.amber : (j % 3 === 1 ? [250, 206, 214] : T.peach);
+        var col = j % 3 === 0 ? T.amber : (j % 3 === 1 ? [255, 150, 200] : T.peach);
         ctx.fillStyle = rgba(col, (0.85 - j * 0.35 / rings) * a);
         for (var q = 0; q < n; q++) {
           var aq = q * 6.2832 / n + rot + j * 0.3, wob = 1 + 0.05 * Math.sin(aq * 3 + time * 0.002);
@@ -142,8 +142,8 @@
         var q0x = s.x0, q0y = s.y0, mid = segPt(s, e), q1x = s.x0 + (mid[2] - s.x0) * e, q1y = s.y0 + (mid[3] - s.y0) * e;
         var w = R * 0.013 * Math.pow(0.72, s.depth);
         ctx.beginPath(); ctx.moveTo(sx(q0x, q0y), sy(q0x, q0y)); ctx.quadraticCurveTo(sx(q1x, q1y), sy(q1x, q1y), sx(mid[0], mid[1]), sy(mid[0], mid[1]));
-        ctx.strokeStyle = rgba(T.amber, 0.14 * fade); ctx.lineWidth = Math.max(1.5, w * 3.2); ctx.stroke();
-        ctx.strokeStyle = rgba([250, 214, 160], 0.6 * fade); ctx.lineWidth = Math.max(0.6, w); ctx.stroke();
+        ctx.strokeStyle = rgba(T.amber, 0.24 * fade); ctx.lineWidth = Math.max(1.5, w * 3.2); ctx.stroke();
+        ctx.strokeStyle = rgba([255, 222, 150], 0.9 * fade); ctx.lineWidth = Math.max(0.6, w); ctx.stroke();
         if (p < 1) fronts.push([sx(mid[0], mid[1]), sy(mid[0], mid[1])]);
       }
       for (i = 0; i < fronts.length; i++) glowDot(fronts[i][0], fronts[i][1], Math.max(1.6, R * 0.006), 0.9 * fade);
