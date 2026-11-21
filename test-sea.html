@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PIVOT sea of light</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400&family=Spectral:ital,wght@0,200;0,300;0,500;1,300&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0B1712;overflow:hidden;font-family:"Hanken Grotesk",system-ui,sans-serif;color:#EDE6D0}
+canvas{position:fixed;inset:0;display:block;touch-action:none}
+.title{position:fixed;left:0;right:0;top:50%;transform:translateY(-40%);text-align:center;opacity:0;transition:opacity 2s ease,transform 2s ease;pointer-events:none}
+.title.on{opacity:1;transform:translateY(-50%)}
+h1{font-family:Spectral,Georgia,serif;font-weight:200;font-size:clamp(3.2rem,2rem + 7vw,8rem);letter-spacing:.16em;margin:0 0 .4rem;padding-left:.16em;line-height:1}
+.sub{font-family:Spectral,Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(1.05rem,.9rem + .8vw,1.6rem);margin:0 0 .6rem;text-shadow:0 0 20px #0B1712}
+.by{color:#D2C49A;font-size:.95rem;letter-spacing:.05em;margin:0;text-shadow:0 0 16px #0B1712}
+.when{color:#A9BFA6;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin:.7rem 0 0;text-shadow:0 0 16px #0B1712}
+.v1 h1,.v10 h1{background:linear-gradient(180deg,#FFF1C1 0%,#E8B84A 38%,#9C6A12 62%,#F2CF72 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(11,23,18,.95))}
+.v10 h1{font-weight:500}
+.v2 h1{color:#FFFDF6;text-shadow:0 0 12px rgba(255,200,90,.9),0 0 40px rgba(240,170,40,.7),0 0 90px rgba(200,120,20,.5)}
+.v3 h1{background:linear-gradient(100deg,#8C5A0E 0%,#E8B84A 30%,#FFF4CF 45%,#E8B84A 60%,#8C5A0E 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 4s linear infinite;filter:drop-shadow(0 0 16px rgba(11,23,18,.95))}
+@keyframes sh{from{background-position:120% 0}to{background-position:-130% 0}}
+.v4 h1{color:#E2A93B;text-shadow:0 0 30px rgba(11,23,18,1),0 0 6px rgba(255,210,120,.5)}
+.v5 h1{color:#FFF6E2;text-shadow:0 0 14px rgba(230,60,70,.8),0 0 50px rgba(240,170,50,.6)}
+.v6 h1{font-family:Cinzel,serif;font-weight:400;background:linear-gradient(180deg,#FFF1C1,#D9A23A 55%,#8A5A10);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(11,23,18,.95))}
+.v7 h1{color:transparent;-webkit-text-stroke:1.5px #F2C65E;text-shadow:0 0 30px rgba(242,198,94,.35)}
+.v8 h1{color:#1FD07E;text-shadow:0 0 10px rgba(255,210,100,.8),0 0 40px rgba(240,180,60,.5)}
+.v9 h1{font-family:Cinzel,serif;font-weight:600;background:linear-gradient(90deg,#F5BE37,#22C47A,#D8243F,#F5BE37);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 7s linear infinite;filter:drop-shadow(0 0 14px rgba(11,23,18,1))}
+nav{position:fixed;left:0;right:0;bottom:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding:0 10px;z-index:2}
+nav button{font:inherit;font-size:.78rem;color:#D6CBA6;background:rgba(11,23,18,.6);border:1px solid rgba(232,184,74,.35);border-radius:999px;padding:.35rem .75rem;cursor:pointer}
+nav button.cur{background:#E8B84A;color:#0B1712;border-color:#E8B84A}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="title" id="title"><h1>PIVOT</h1><p class="sub">The Art of Moving Beyond Our Familiar Selves</p><p class="by">By Rebecca A. Tavangar</p><p class="when">Forthcoming 2027</p></div>
+<nav id="nav"></nav>
+<script>
+var G=[245,190,55],G2=[255,215,110],E1=[18,190,100],E2=[40,220,130],R=[200,25,50],A=[230,120,30],WH=[255,245,220];
+var CFG=[null,
+ {n:'Burnished gold',pal:[G,G2,E1,E2,R,A],emit:'radial'},
+ {n:'White flame',pal:[G,G2,E1,E2,R,A],emit:'radial'},
+ {n:'Gold shimmer',pal:[G,G2,E1,E2,R],emit:'spiral'},
+ {n:'Emerald sea',pal:[E1,E2,E1,G,G2],emit:'radial'},
+ {n:'Crimson and gold',pal:[R,R,G,G2,A],emit:'radial'},
+ {n:'Engraved gold',pal:[G,G2,E1,E2,R,A],emit:'spiral'},
+ {n:'Outline',pal:[G,G2,E1,E2,R,A],emit:'burst'},
+ {n:'Emerald word',pal:[G,G2,G,A,R],emit:'radial'},
+ {n:'Living colour',pal:[G,E2,R,G2,E1],emit:'pulse'},
+ {n:'Heavy gold',pal:[G,G2,E1,E2,R,A,WH],emit:'burst'}];
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W,H,N=2600,P=[],mode,cfg,start,heading,target,wave,pivoted,mx=-1e4,my=-1e4,title=document.getElementById('title'),nav=document.getElementById('nav');
+function size(){var d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);ctx.fillStyle='#0B1712';ctx.fillRect(0,0,W,H);}
+function birth(p,i){var a=Math.random()*6.2832;p.x=p.px=W/2+Math.cos(a)*2;p.y=p.py=H/2+Math.sin(a)*2;p.h=a;p.o=a;
+ var dl=cfg.emit==='burst'?Math.random()*0.5:cfg.emit==='pulse'?((i%4)*0.6+Math.random()*0.15):Math.random()*2.6;p.delay=dl;p.z=Math.random();p.s=0.6+Math.random()*0.8;p.c=cfg.pal[(Math.random()*cfg.pal.length)|0];p.turned=false;p.alive=false;}
+function sea(p){var e=Math.random()*4|0;p.x=e===0?-10:e===1?W+10:Math.random()*W;p.y=e===2?-10:e===3?H+10:Math.random()*H;p.px=p.x;p.py=p.y;p.h=heading;p.turned=true;}
+function go(n){mode=n;cfg=CFG[n];history.replaceState(null,'','#'+n);document.body.className='v'+n;title.classList.remove('on');start=null;heading=-0.3;target=-0.3;wave=-1;pivoted=false;P=[];
+ for(var i=0;i<N;i++){var p={};birth(p,i);P.push(p);}ctx.globalCompositeOperation='source-over';ctx.fillStyle='#0B1712';ctx.fillRect(0,0,W,H);
+ [].forEach.call(nav.children,function(b,i){b.classList.toggle('cur',i===n-1);});}
+addEventListener('pointermove',function(e){var dx=e.clientX-mx,dy=e.clientY-my;if(mx>-1e3&&dx*dx+dy*dy>4&&pivoted){target=Math.atan2(dy,dx);}mx=e.clientX;my=e.clientY;});
+function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,252,235,'+a+')');g.addColorStop(0.3,'rgba(245,190,55,'+a*0.5+')');g.addColorStop(1,'rgba(245,190,55,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
+function frame(now){if(start===null)start=now;var t=(now-start)/1000,cx=W/2,cy=H/2;
+ if(!pivoted&&t>4.2){pivoted=true;wave=0;target=-0.3+2.6;}
+ if(wave>=0)wave+=Math.max(W,H)*0.012;
+ ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(11,23,18,0.12)';ctx.fillRect(0,0,W,H);
+ ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+ for(var i=0;i<N;i++){var p=P[i];if(!p.alive){if(t<p.delay)continue;p.alive=true;}
+  var dc=Math.hypot(p.x-cx,p.y-cy);if(wave>=0&&dc<wave)p.turned=true;
+  var n=Math.sin(p.x*0.004+t*0.6)*Math.cos(p.y*0.005-t*0.4)*1.1+Math.sin((p.x+p.y)*0.002+t*0.3)*0.6;
+  var base=p.turned?target:p.o+(cfg.emit==='spiral'?Math.min(1.2,dc/220):0);
+  var dm=Math.hypot(p.x-mx,p.y-my),sw=dm<180?(1-dm/180)*1.6:0;
+  var want=base+n*(p.turned?(0.5+0.5*p.z):0.35)+sw,diff=Math.atan2(Math.sin(want-p.h),Math.cos(want-p.h));p.h+=diff*0.06;
+  var sp=(1.2+2.6*p.z)*p.s*(dc<60&&!p.turned?1.6:1);p.px=p.x;p.py=p.y;p.x+=Math.cos(p.h)*sp;p.y+=Math.sin(p.h)*sp;
+  if(p.x<-20||p.x>W+20||p.y<-20||p.y>H+20){if(pivoted)sea(p);else{birth(p,i);p.delay=0;p.alive=true;}continue;}
+  var b=Math.min(1,0.35+0.5*p.z+0.6*Math.min(1,Math.abs(diff)*2)),c=p.c;
+  ctx.strokeStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+b.toFixed(3)+')';ctx.lineWidth=0.6+1.8*p.z;ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);ctx.stroke();}
+ var ca=pivoted?Math.max(0,1-(t-4.2)/1.5):1,pl=cfg.emit==='pulse'?0.7+0.3*Math.sin(t*5):1;
+ if(ca>0){glow(cx,cy,60*pl,0.9*ca);ctx.fillStyle='rgba(255,255,255,'+ca+')';ctx.beginPath();ctx.arc(cx,cy,2.5,0,6.2832);ctx.fill();}
+ heading+=Math.atan2(Math.sin(target-heading),Math.cos(target-heading))*0.03;
+ if(t>5.6)title.classList.add('on');requestAnimationFrame(frame);}
+for(var k=1;k<=10;k++){(function(k){var b=document.createElement('button');b.textContent=k+'. '+CFG[k].n;b.onclick=function(){go(k);};nav.appendChild(b);})(k);}
+var rb=document.createElement('button');rb.textContent='Replay';rb.onclick=function(){go(mode);};nav.appendChild(rb);
+size();addEventListener('resize',size);go(Math.min(10,Math.max(1,parseInt(location.hash.slice(1))||1)));requestAnimationFrame(frame);
+</script></body></html>
