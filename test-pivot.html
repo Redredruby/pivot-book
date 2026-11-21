@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PIVOT</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400&family=Spectral:ital,wght@0,200;0,300;1,300&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0F1A15;overflow:hidden;font-family:"Hanken Grotesk",system-ui,sans-serif;color:#EDE6D0}
+canvas{position:fixed;inset:0;display:block;cursor:grab;touch-action:none}canvas:active{cursor:grabbing}
+.title{position:fixed;left:0;right:0;top:70%;text-align:center;opacity:0;transform:translateY(14px);transition:opacity 1.8s ease,transform 1.8s ease;pointer-events:none}
+.title.on{opacity:1;transform:none}
+.title h1{font-family:Spectral,Georgia,serif;font-weight:200;font-size:clamp(3.2rem,2rem + 6vw,7rem);letter-spacing:.16em;margin:0 0 .4rem;padding-left:.16em;line-height:1;color:#F2D58A}
+.title .sub{font-family:Spectral,Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(1.05rem,.9rem + .8vw,1.6rem);margin:0 0 .6rem}
+.title .by{color:#C9BC94;font-size:.95rem;letter-spacing:.05em;margin:0}
+.title .when{color:#9FB39F;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin:.7rem 0 0}
+.hint{position:fixed;bottom:14px;left:0;right:0;text-align:center;font-size:.75rem;color:#7F9585;letter-spacing:.1em}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="title" id="title"><h1>PIVOT</h1><p class="sub">The Art of Moving Beyond Our Familiar Selves</p><p class="by">By Rebecca A. Tavangar</p><p class="when">Forthcoming 2027</p></div>
+<div class="hint">Drag to turn</div>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W,H,cx,cy,S;
+function size(){var d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);cx=W/2;cy=H*0.37;S=Math.min(W,H)*0.17;}
+function cl(u){return u<0?0:u>1?1:u;}function eio(u){u=cl(u);return u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;}
+var COL=['242,190,60','20,200,110','215,30,55','255,150,30'];
+var V=[],E=[];for(var i=0;i<16;i++)V.push([i&1?1:-1,i&2?1:-1,i&4?1:-1,i&8?1:-1]);
+for(i=0;i<16;i++)for(var b=0;b<4;b++){var j=i^(1<<b);if(j>i)E.push([i,j,b]);}
+var yaw=0.5,pitch=-0.35,vy=0,vp=0,drag=false,lx,ly;
+cv.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',function(e){if(!drag)return;var dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;vy=dx*0.006;vp=dy*0.006;yaw+=vy;pitch+=vp;});
+addEventListener('pointerup',function(){drag=false;});
+function r2(p,a,b,t){var c=Math.cos(t),s=Math.sin(t),x=p[a],y=p[b];p[a]=x*c-y*s;p[b]=x*s+y*c;}
+function glow(x,y,r,a,col){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,250,225,'+a+')');g.addColorStop(0.25,'rgba('+col+','+(a*0.55)+')');g.addColorStop(1,'rgba('+col+',0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
+var start=null,title=document.getElementById('title');
+function frame(now){if(start===null)start=now;var t=(now-start)/1000;
+ ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(15,26,21,0.35)';ctx.fillRect(0,0,W,H);
+ var k=[eio((t-0.8)/1.1),eio((t-2.0)/1.1),eio((t-3.2)/1.1),eio((t-4.4)/1.3)];
+ var piv=[(1-k[0])*1.5708,(1-k[1])*1.5708,(1-k[2])*1.5708,(1-k[3])*1.5708];
+ if(!drag){vy*=0.95;vp*=0.95;yaw+=vy+0.0035;pitch+=vp;}
+ var a4=t*0.35*k[3],b4=t*0.22*k[3];
+ var Q=V.map(function(v){var p=[v[0]*k[0],v[1]*k[1],v[2]*k[2],v[3]*k[3]];
+  r2(p,0,1,piv[1]);r2(p,1,2,piv[2]);r2(p,2,3,piv[3]);
+  r2(p,0,3,a4);r2(p,1,3,b4);
+  var f4=2.4/(3.2-p[3]),x=p[0]*f4,y=p[1]*f4,z=p[2]*f4;
+  var c=Math.cos(yaw),s=Math.sin(yaw),X=x*c-z*s,Z=x*s+z*c,c2=Math.cos(pitch),s2=Math.sin(pitch),Y=y*c2-Z*s2;Z=y*s2+Z*c2;
+  var f=4/(4+Z);return [cx+X*f*S,cy+Y*f*S,f,p[3]];});
+ ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+ E.forEach(function(e){var A=Q[e[0]],B=Q[e[1]],d=e[2],vis=k[d];if(vis<=0.01)return;var al=0.85*vis*Math.min(1,(A[2]+B[2])/2);
+  ctx.strokeStyle='rgba('+COL[d]+','+(al*0.25)+')';ctx.lineWidth=7*(A[2]+B[2])/2;ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();
+  ctx.strokeStyle='rgba('+COL[d]+','+al+')';ctx.lineWidth=1.8;ctx.stroke();});
+ Q.forEach(function(q){glow(q[0],q[1],S*0.12*q[2],0.55,'242,190,60');});
+ var pulse=1+0.08*Math.sin(t*2.2);glow(cx,cy,S*1.6*pulse,0.28,'20,200,110');glow(cx,cy,S*0.45*pulse,0.9,'242,190,60');
+ ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,3,0,6.2832);ctx.fill();
+ if(t>6.2)title.classList.add('on');requestAnimationFrame(frame);}
+size();addEventListener('resize',size);requestAnimationFrame(frame);
+</script></body></html>
