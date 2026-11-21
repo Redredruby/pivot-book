@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PIVOT</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400&family=Spectral:ital,wght@0,200;0,300;1,300&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0B1712;overflow:hidden;font-family:"Hanken Grotesk",system-ui,sans-serif;color:#EDE6D0}
+canvas{position:fixed;inset:0;display:block;touch-action:none}
+.title{position:fixed;left:0;right:0;top:50%;transform:translateY(-40%);text-align:center;opacity:0;transition:opacity 2s ease,transform 2s ease;pointer-events:none}
+.title.on{opacity:1;transform:translateY(-50%)}
+.title h1{font-family:Spectral,Georgia,serif;font-weight:200;font-size:clamp(3.2rem,2rem + 7vw,8rem);letter-spacing:.16em;margin:0 0 .4rem;padding-left:.16em;line-height:1;color:#F4DB95;text-shadow:0 0 40px rgba(11,23,18,.9)}
+.title .sub{font-family:Spectral,Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(1.05rem,.9rem + .8vw,1.6rem);margin:0 0 .6rem;text-shadow:0 0 20px #0B1712}
+.title .by{color:#D2C49A;font-size:.95rem;letter-spacing:.05em;margin:0;text-shadow:0 0 16px #0B1712}
+.title .when{color:#A9BFA6;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;margin:.7rem 0 0;text-shadow:0 0 16px #0B1712}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="title" id="title"><h1>PIVOT</h1><p class="sub">The Art of Moving Beyond Our Familiar Selves</p><p class="by">By Rebecca A. Tavangar</p><p class="when">Forthcoming 2027</p></div>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W,H,N=2600,P=[];
+var COLS=[[245,190,55],[255,215,110],[18,190,100],[40,220,130],[200,25,50],[230,120,30]];
+function size(){var d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);ctx.fillStyle='#0B1712';ctx.fillRect(0,0,W,H);}
+function seed(p){p.x=Math.random()*W;p.y=Math.random()*H;p.z=Math.random();p.px=p.x;p.py=p.y;}
+size();for(var i=0;i<N;i++){var p={c:COLS[(Math.random()*COLS.length)|0],h:0,s:0.6+Math.random()*0.8};seed(p);P.push(p);}
+var heading=-0.3,target=-0.3,mx=-1e4,my=-1e4,lastMove=0,pivoted=false,wave=-1,title=document.getElementById('title'),start=null;
+addEventListener('pointermove',function(e){var dx=e.clientX-mx,dy=e.clientY-my;if(mx>-1e3&&dx*dx+dy*dy>4){target=Math.atan2(dy,dx);lastMove=performance.now();}mx=e.clientX;my=e.clientY;});
+function frame(now){if(start===null)start=now;var t=(now-start)/1000;
+ if(!pivoted&&t>3.2){pivoted=true;wave=0;target=heading+2.6;}
+ if(wave>=0)wave+=Math.max(W,H)*0.012;
+ ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(11,23,18,0.12)';ctx.fillRect(0,0,W,H);
+ ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+ var cx=W/2,cy=H/2;
+ for(var i=0;i<N;i++){var p=P[i];
+  var dxc=p.x-cx,dyc=p.y-cy,dc=Math.sqrt(dxc*dxc+dyc*dyc);
+  var goal=(wave<0||dc<wave)?target:p.h0||target;
+  if(wave>=0&&dc>=wave&&p.h0===undefined)p.h0=p.h;
+  if(wave>=0&&dc<wave)p.h0=undefined;
+  var n=Math.sin(p.x*0.004+t*0.6)*Math.cos(p.y*0.005-t*0.4)*1.1+Math.sin((p.x+p.y)*0.002+t*0.3)*0.6;
+  var dm=Math.hypot(p.x-mx,p.y-my),sw=dm<180?(1-dm/180)*1.6:0;
+  var want=goal+n*(0.5+0.5*p.z)+sw;
+  var diff=Math.atan2(Math.sin(want-p.h),Math.cos(want-p.h));p.h+=diff*0.06;
+  var sp=(1.2+2.6*p.z)*p.s;p.px=p.x;p.py=p.y;p.x+=Math.cos(p.h)*sp;p.y+=Math.sin(p.h)*sp;
+  if(p.x<-20||p.x>W+20||p.y<-20||p.y>H+20){seed(p);p.h=heading;continue;}
+  var tl=Math.abs(diff),bright=0.35+0.5*p.z+0.6*Math.min(1,tl*2);
+  var c=p.c;ctx.strokeStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+Math.min(1,bright).toFixed(3)+')';
+  ctx.lineWidth=0.6+1.8*p.z;ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);ctx.stroke();}
+ heading+=Math.atan2(Math.sin(target-heading),Math.cos(target-heading))*0.03;
+ if(t>4.6)title.classList.add('on');
+ requestAnimationFrame(frame);}
+addEventListener('resize',size);requestAnimationFrame(frame);
+</script></body></html>
