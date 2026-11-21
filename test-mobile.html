@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIVOT: The Art of Moving Beyond Our Familiar Selves</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=Spectral:ital,wght@0,200;0,300;1,300&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #050A18; overflow: hidden; font-family: "Hanken Grotesk", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; display: block; }
+  .scrim { position: fixed; left: 0; right: 0; bottom: 0; height: 50vh; background: linear-gradient(to top, rgba(4,8,22,0.94) 0%, rgba(4,8,22,0.75) 45%, rgba(4,8,22,0) 100%); pointer-events: none; }
+  .titles { position: fixed; left: 0; right: 0; bottom: 6vh; text-align: center; pointer-events: none; }
+  .pivot { font-family: Spectral, Georgia, serif; font-weight: 300; font-size: clamp(56px, 9vw, 128px); letter-spacing: 0.16em; padding-left: 0.16em; line-height: 1; margin: 0;
+    background: linear-gradient(100deg, #8A5A12 0%, #E9B949 22%, #FFF1C4 38%, #D9A53A 52%, #9C6A18 70%, #F0C760 88%, #8A5A12 100%); background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 0 30px rgba(0,0,0,0.7));
+    animation: shimmer 9s linear infinite; }
+  @keyframes shimmer { to { background-position: -250% 0; } }
+  .sub { font-family: Spectral, Georgia, serif; font-style: italic; font-weight: 300; color: #EADFC8; font-size: clamp(18px, 2vw, 28px); margin: 0.6em 0 0.5em; }
+  .by { color: #C9BFA8; font-size: 15px; letter-spacing: 0.05em; margin: 0; }
+  .fc { color: #D9A53A; font-size: 12px; letter-spacing: 0.3em; margin: 0.9em 0 0; }
+  .titles > * { opacity: 0; transform: translateY(14px); transition: opacity 1.4s ease, transform 1.4s ease; }
+  .on > * { opacity: 1; transform: none; }
+  .on .sub { transition-delay: 0.5s; } .on .by { transition-delay: 0.9s; } .on .fc { transition-delay: 1.2s; }
+  nav { position: fixed; top: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 5; flex-wrap: wrap; }
+  nav button { font: 500 14px "Hanken Grotesk", sans-serif; color: #EADFC8; background: rgba(8,14,36,0.6); border: 1px solid rgba(217,165,58,0.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+  nav button.sel { background: #D9A53A; color: #0A1230; border-color: #D9A53A; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="scrim"></div>
+<div class="titles" id="titles">
+  <h1 class="pivot">PIVOT</h1>
+  <p class="sub">The Art of Moving Beyond Our Familiar Selves</p>
+  <p class="by">By Rebecca A. Tavangar</p>
+  <p class="fc">FORTHCOMING 2027</p>
+</div>
+<script>// A mobile in balance: every arm turns on its own small pivot point. It starts weighed down to one side,
+// then the top pivot lights and the whole sculpture swings into a new balance. Each shape is gold on one
+// face and blue on the other, so as it turns in the air it keeps showing another side of itself.
+function Mobile(ctx, W, H) {
+  var S = Math.min(W * 1.05, H * 1.15), topY = H * 0.1, cx = W * 0.5;
+  var GOLD = ['#FFE9A8', '#E9B442', '#9A6512'], COB = ['#6E9BFF', '#2449B8', '#0E1E5C'], LAP = ['#9CC0FF', '#3A62D6', '#14276E'];
+  var s0 = 5; function rn() { s0 = (s0 * 16807) % 2147483647; return s0 / 2147483647; }
+  function Sh(kind, size, a, b) { return { shape: 1, kind: kind, size: size, a: a, b: b, yaw: rn() * 6.28, ys: (rn() < 0.5 ? -1 : 1) * (0.35 + 0.5 * rn()) }; }
+  function A(l1, l2, left, dl, right, dr, tilt) {
+    return { l1: l1, l2: l2, left: left, dl: dl, right: right, dr: dr, th: tilt, w: 0, rest0: tilt, rest1: (rn() - 0.5) * 0.08, yaw: rn() * 0.6, ys: (rn() - 0.5) * 0.25 };
+  }
+  var root = A(0.27, 0.27,
+      A(0.13, 0.15, Sh('disc', 0.062, GOLD, COB), 0.05,
+        A(0.08, 0.09, Sh('moon', 0.05, COB, GOLD), 0.05, Sh('disc', 0.034, GOLD, LAP), 0.06, -0.7), 0.1, 0.6), 0.1,
+      A(0.15, 0.13,
+        A(0.09, 0.08, Sh('petal', 0.05, LAP, GOLD), 0.05, Sh('disc', 0.03, GOLD, COB), 0.05, 0.7), 0.09,
+        Sh('disc', 0.072, COB, GOLD), 0.05, -0.5), 0.13, 0.75);
+  var gust = 0, lastMx = null, lit = 0;
+  this.move = function (x) { if (lastMx !== null) gust += Math.max(-3, Math.min(3, (x - lastMx) / 40)); lastMx = x; };
+  this.leave = function () { lastMx = null; };
+  function step(n, t, dt) {
+    if (n.shape) { n.yaw += (n.ys + gust * 0.35) * dt; return; }
+    var target = t < 2.3 ? n.rest0 : n.rest1;
+    n.w += (-(n.th - target) * 5.5 - n.w * 0.55 + gust * 0.12) * dt; n.th += n.w * dt;
+    n.yaw += (n.ys + gust * 0.2) * dt;
+    step(n.left, t, dt); step(n.right, t, dt);
+  }
+  function grad(x, y, r, c) { var g = ctx.createLinearGradient(x - r, y - r, x + r, y + r); g.addColorStop(0, c[0]); g.addColorStop(0.45, c[1]); g.addColorStop(1, c[2]); return g; }
+  function drawShape(sh, x, y, pyaw) {
+    var r = sh.size * S * 1.3, f = Math.cos(sh.yaw + pyaw), af = Math.max(0.05, Math.abs(f)), cy = y + r * 1.05, cols = f >= 0 ? sh.a : sh.b;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(233,180,66,0.85)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, cy - r * (sh.kind === 'petal' ? 1.2 : 1)); ctx.stroke();
+    ctx.translate(x, cy); ctx.scale(af, 1);
+    ctx.shadowColor = 'rgba(0,0,6,0.7)'; ctx.shadowBlur = 34; ctx.shadowOffsetX = 30 / af; ctx.shadowOffsetY = 40;
+    ctx.fillStyle = grad(0, 0, r, cols); ctx.beginPath();
+    if (sh.kind === 'disc') ctx.arc(0, 0, r, 0, 6.2832);
+    else if (sh.kind === 'petal') { ctx.moveTo(0, -r * 1.2); ctx.quadraticCurveTo(r * 1.1, -r * 0.2, 0, r * 1.15); ctx.quadraticCurveTo(-r * 1.1, -r * 0.2, 0, -r * 1.2); }
+    else { ctx.arc(0, 0, r, -1.9, 1.9, false); ctx.arc(r * 0.55, 0, r * 0.78, 1.95, -1.95, true); ctx.closePath(); }
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    var edge = 1 - af; // a bright rim when the shape turns edge-on to us
+    ctx.lineWidth = 1.5 / af; ctx.strokeStyle = 'rgba(255,233,168,' + (0.25 + 0.7 * edge).toFixed(3) + ')'; ctx.stroke();
+    ctx.restore();
+  }
+  function pivotDot(x, y, k) {
+    var R = 5 + 22 * k, g = ctx.createRadialGradient(x, y, 0, x, y, R);
+    g.addColorStop(0, 'rgba(255,248,220,' + (0.9).toFixed(2) + ')'); g.addColorStop(0.3, 'rgba(240,190,80,' + (0.5 + 0.4 * k).toFixed(2) + ')'); g.addColorStop(1, 'rgba(240,190,80,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, R, 0, 6.2832); ctx.fill();
+  }
+  function drawArm(n, x, y, pyaw, isRoot) {
+    var yaw = n.yaw + pyaw, cyw = Math.cos(yaw), c = Math.cos(n.th), s = Math.sin(n.th);
+    var lx = x - n.l1 * S * c * cyw, ly = y + n.l1 * S * s, rx = x + n.l2 * S * c * cyw, ry = y - n.l2 * S * s;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,6,0.6)'; ctx.shadowBlur = 16; ctx.shadowOffsetX = 30; ctx.shadowOffsetY = 40;
+    ctx.strokeStyle = '#E2AC3E'; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.quadraticCurveTo(x, y + 0.012 * S, rx, ry); ctx.stroke(); ctx.restore();
+    var ends = [[lx, ly, n.left, n.dl], [rx, ry, n.right, n.dr]];
+    for (var i = 0; i < 2; i++) {
+      var e = ends[i], ch = e[2], hy = e[1] + e[3] * S;
+      if (ch.shape) drawShape(ch, e[0], e[1] + e[3] * S * 0.3, yaw);
+      else { ctx.strokeStyle = 'rgba(233,180,66,0.85)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(e[0], e[1]); ctx.lineTo(e[0], hy); ctx.stroke(); drawArm(ch, e[0], hy, yaw, false); }
+    }
+    pivotDot(x, y, isRoot ? lit : 0.15);
+  }
+  this.draw = function (t, dt) {
+    gust *= Math.pow(0.15, dt);
+    var k = Math.exp(-Math.pow((t - 2.3) / 0.45, 2)); lit = Math.max(k, t > 2.3 ? 0.35 : 0.05 + 0.1 * Math.min(1, t / 2));
+    var steps = 4; for (var i = 0; i < steps; i++) step(root, t, dt / steps);
+    var bg = ctx.createRadialGradient(cx, H * 0.42, 0, cx, H * 0.42, Math.max(W, H) * 0.75);
+    bg.addColorStop(0, '#13234F'); bg.addColorStop(0.55, '#0A1430'); bg.addColorStop(1, '#040817');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    if (k > 0.01) { var g = ctx.createRadialGradient(cx, topY + 0.05 * S, 0, cx, topY + 0.05 * S, S * 0.5); g.addColorStop(0, 'rgba(255,214,120,' + (0.28 * k).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,214,120,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    var py = topY + 0.05 * S;
+    ctx.strokeStyle = 'rgba(233,180,66,0.85)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, py); ctx.stroke();
+    drawArm(root, cx, py, 0, true);
+  };
+}
+</script>
+<script>
+(function () {
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d'), titles = document.getElementById('titles');
+  var makers = [Mobile], cur = 0, scene, t0, last, W, H;
+  
+  function start() {
+    var dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scene = new makers[cur](ctx, W, H); t0 = null; titles.classList.remove('on');
+  }
+  function frame(now) {
+    if (t0 === null) { t0 = now; last = now; }
+    var t = (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
+    scene.draw(t, dt);
+    if (t > 4.6) titles.classList.add('on');
+    requestAnimationFrame(frame);
+  }
+  addEventListener('pointermove', function (e) { scene.move(e.clientX, e.clientY); });
+  document.addEventListener('pointerleave', function () { scene.leave(); });
+  addEventListener('resize', start);
+  start(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
