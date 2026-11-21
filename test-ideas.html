@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIVOT: opening ideas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=Spectral:ital,wght@0,200;0,300;1,300&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #050A18; overflow: hidden; font-family: "Hanken Grotesk", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; display: block; }
+  .scrim { position: fixed; left: 0; right: 0; bottom: 0; height: 50vh; background: linear-gradient(to top, rgba(4,8,22,0.94) 0%, rgba(4,8,22,0.75) 45%, rgba(4,8,22,0) 100%); pointer-events: none; }
+  .titles { position: fixed; left: 0; right: 0; bottom: 13vh; text-align: center; pointer-events: none; }
+  .pivot { font-family: Spectral, Georgia, serif; font-weight: 300; font-size: clamp(64px, 11vw, 150px); letter-spacing: 0.16em; padding-left: 0.16em; line-height: 1; margin: 0;
+    background: linear-gradient(100deg, #8A5A12 0%, #E9B949 22%, #FFF1C4 38%, #D9A53A 52%, #9C6A18 70%, #F0C760 88%, #8A5A12 100%); background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 0 30px rgba(0,0,0,0.7));
+    animation: shimmer 9s linear infinite; }
+  @keyframes shimmer { to { background-position: -250% 0; } }
+  .sub { font-family: Spectral, Georgia, serif; font-style: italic; font-weight: 300; color: #EADFC8; font-size: clamp(18px, 2vw, 28px); margin: 0.6em 0 0.5em; }
+  .by { color: #C9BFA8; font-size: 15px; letter-spacing: 0.05em; margin: 0; }
+  .fc { color: #D9A53A; font-size: 12px; letter-spacing: 0.3em; margin: 0.9em 0 0; }
+  .titles > * { opacity: 0; transform: translateY(14px); transition: opacity 1.4s ease, transform 1.4s ease; }
+  .on > * { opacity: 1; transform: none; }
+  .on .sub { transition-delay: 0.5s; } .on .by { transition-delay: 0.9s; } .on .fc { transition-delay: 1.2s; }
+  nav { position: fixed; top: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 5; flex-wrap: wrap; }
+  nav button { font: 500 14px "Hanken Grotesk", sans-serif; color: #EADFC8; background: rgba(8,14,36,0.6); border: 1px solid rgba(217,165,58,0.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+  nav button.sel { background: #D9A53A; color: #0A1230; border-color: #D9A53A; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="scrim"></div>
+<div class="titles" id="titles">
+  <h1 class="pivot">PIVOT</h1>
+  <p class="sub">The Art of Moving Beyond Our Familiar Selves</p>
+  <p class="by">By Rebecca A. Tavangar</p>
+  <p class="fc">FORTHCOMING 2027</p>
+</div>
+<nav>
+  <button data-i="0">1. Turning toward the light</button>
+  <button data-i="1">2. Silk around a pin</button>
+  <button data-i="2">3. Ink from one point</button>
+  <button data-i="r">Replay</button>
+</nav>
+<script>// Idea 1: Turning toward the light. A field of leaves all lean one way (habit); a light appears and,
+// in a wave from the centre, each leaf pivots on its base and turns over to show a lit, coloured side.
+function Leaves(ctx, W, H) {
+  var cx = W / 2, cy = H / 2, sp = Math.max(18, Math.min(W, H) / 34), L = sp * 1.05, wd = sp * 0.36;
+  var lv = [], s = 7; function r() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+  for (var y = -sp; y < H + sp; y += sp * 0.86) for (var x = -sp; x < W + sp; x += sp) {
+    var bx = x + (r() - 0.5) * sp * 0.7 + ((y / sp | 0) % 2) * sp * 0.5, by = y + (r() - 0.5) * sp * 0.5;
+    var th = -2.2 + (r() - 0.5) * 0.25;
+    lv.push({ x: bx, y: by, th: th, w: 0, rho: 0, ph: r() * 6.28, sc: 0.75 + 0.5 * r(), d: Math.hypot(bx - cx, by - cy) });
+  }
+  var lx = cx, ly = cy, tx = cx, ty = cy, mouse = false, R = Math.hypot(W, H) / 2;
+  var gold = [246, 200, 84], amber = [214, 138, 38], crim = [36, 84, 196], emer = [20, 46, 128], deep = [10, 20, 60];
+  function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  function ramp(u) { // distance from light → colour
+    if (u < 0.18) return mix(gold, amber, u / 0.18);
+    if (u < 0.45) return mix(amber, crim, (u - 0.18) / 0.27);
+    if (u < 0.8) return mix(crim, emer, (u - 0.45) / 0.35);
+    return mix(emer, deep, Math.min(1, (u - 0.8) / 0.4));
+  }
+  var tNow = 0; this.move = function (x, y) { if (tNow > 3.6) { tx = x; ty = y; mouse = true; } };
+  this.leave = function () { tx = cx; ty = cy; };
+  this.draw = function (t, dt) {
+    tNow = t; ctx.fillStyle = '#060B1A'; ctx.fillRect(0, 0, W, H);
+    var lightOn = Math.min(1, Math.max(0, (t - 0.6) / 0.9));
+    lx += (tx - lx) * Math.min(1, dt * 3); ly += (ty - ly) * Math.min(1, dt * 3);
+    var front = Math.max(0, (t - 1.4)) * R * 0.75; // wave radius
+    for (var i = 0; i < lv.length; i++) {
+      var a = lv[i], reached = a.d < front;
+      var sway = 0.07 * Math.sin(t * 1.3 + a.ph + a.x * 0.004);
+      var target = reached ? Math.atan2(ly - a.y, lx - a.x) : -2.2;
+      var df = Math.atan2(Math.sin(target + sway - a.th), Math.cos(target + sway - a.th));
+      a.w += (df * 34 - a.w * 7) * dt; a.th += a.w * dt;
+      a.rho += ((reached ? Math.PI : 0) - a.rho) * Math.min(1, dt * 2.6);
+      var c = Math.cos(a.rho), hw = wd * a.sc * Math.max(0.08, Math.abs(c)), len = L * a.sc;
+      var ex = Math.cos(a.th), ey = Math.sin(a.th), nx = -ey, ny = ex;
+      var tipx = a.x + ex * len, tipy = a.y + ey * len, mx = a.x + ex * len * 0.5, my = a.y + ey * len * 0.5;
+      var dl = Math.hypot(lx - a.x, ly - a.y) / R, col, lit;
+      if (c > 0) { col = mix(deep, emer, 0.35); lit = 0.55 + 0.25 * c; }
+      else { col = ramp(dl); lit = (0.55 + 0.75 * Math.max(0, 1 - dl * 1.1)) * (0.6 + 0.4 * -c) * (0.4 + 0.6 * lightOn); }
+      var edge = 1 - Math.abs(c); // catching the light when edge-on
+      var rr = Math.min(255, col[0] * lit + 120 * edge), gg = Math.min(255, col[1] * lit + 90 * edge), bb = Math.min(255, col[2] * lit + 40 * edge);
+      ctx.fillStyle = 'rgb(' + (rr | 0) + ',' + (gg | 0) + ',' + (bb | 0) + ')';
+      ctx.beginPath(); ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo(mx + nx * hw * 2, my + ny * hw * 2, tipx, tipy);
+      ctx.quadraticCurveTo(mx - nx * hw * 2, my - ny * hw * 2, a.x, a.y); ctx.fill();
+    }
+    if (lightOn > 0) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      var g = ctx.createRadialGradient(lx, ly, 0, lx, ly, R * 0.55);
+      g.addColorStop(0, 'rgba(255,240,200,' + 0.55 * lightOn + ')'); g.addColorStop(0.08, 'rgba(255,200,110,' + 0.32 * lightOn + ')');
+      g.addColorStop(0.35, 'rgba(200,90,40,' + 0.1 * lightOn + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      var g2 = ctx.createRadialGradient(lx, ly, 0, lx, ly, 14);
+      g2.addColorStop(0, 'rgba(255,255,250,' + lightOn + ')'); g2.addColorStop(1, 'rgba(255,240,200,0)');
+      ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(lx, ly, 14, 0, 7); ctx.fill(); ctx.restore();
+    }
+  };
+}
+</script>
+<script>// Idea 2: Silk around a pin. Ribbons of silk fan out from one fixed point. At the pivot the swirl
+// reverses and a twist travels outward, turning every ribbon over from blue to its gold side.
+function Silk(ctx, W, H) {
+  var cx = W / 2, cy = H * 0.46, N = 72, K = 90, Rm = Math.hypot(W, H) * 0.62;
+  var mx = cx, my = cy, tmx = cx, tmy = cy, mOn = 0;
+  function sm(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
+  var emer = [30, 78, 190], emerD = [10, 26, 78], gold = [244, 192, 72], crim = [176, 112, 28], wine = [24, 50, 140];
+  function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  var tNow = 0; this.move = function (x, y) { tmx = x; tmy = y; mOn = tNow > 4 ? 1 : 0; };
+  this.leave = function () { mOn = 0; };
+  this.draw = function (t, dt) {
+    tNow = t; ctx.fillStyle = '#050A18'; ctx.fillRect(0, 0, W, H); ctx.lineWidth = 1.2; ctx.lineJoin = 'round';
+    mx += (tmx - mx) * Math.min(1, dt * 4); my += (tmy - my) * Math.min(1, dt * 4);
+    var mAng = Math.atan2(my - cy, mx - cx), mR = Math.hypot(mx - cx, my - cy);
+    var S = 0.9 - 1.8 * sm((t - 2.0) / 1.6);           // swirl reverses at the pivot
+    var grow = sm(t / 1.4);                             // ribbons unfurl from the pin
+    var rot = t * 0.05 + (mOn ? (mx - cx) / W * 0.6 : 0);
+    for (var j = 0; j < N; j++) {
+      var a0 = j * 6.2832 / N, half = 3.1416 / N * 1.04, prev = null;
+      for (var k = 0; k <= K; k++) {
+        var u = k / K, r = u * Rm * grow;
+        var th = a0 + rot + S * Math.pow(u, 1.15) * 2.2 + 0.08 * Math.sin(t * 0.9 + j * 0.7 + u * 5);
+        var flip = 3.1416 * sm((t - 2.2 - u * 1.6) / 1.1);
+        var al = flip + 0.9 * Math.sin(u * 6 - t * 1.4 + j * 0.5) + 0.4 * Math.sin(u * 13 + t * 0.8 - j * 0.9);
+        if (mOn) { var dA = Math.atan2(Math.sin(th - mAng), Math.cos(th - mAng)); al += 1.3 * Math.exp(-dA * dA / 0.08) * Math.exp(-Math.pow((r - mR) / 160, 2)); }
+        var c = Math.cos(al), hw = half * 1.35;
+        var p = { l: [cx + r * Math.cos(th - hw), cy + r * Math.sin(th - hw)], rr: [cx + r * Math.cos(th + hw), cy + r * Math.sin(th + hw)], c: c, u: u };
+        if (prev && r > 0) {
+          var cc = (p.c + prev.c) / 2, ac = Math.abs(cc), col;
+          if (cc > 0) col = mix(emer, emerD, u * 0.8); else col = u < 0.5 ? mix(gold, crim, u / 0.5) : mix(crim, wine, (u - 0.5) / 0.5);
+          var lit = 0.22 + 0.78 * ac, spec = Math.exp(-Math.pow((ac - 0.32) / 0.13, 2));
+          var R = col[0] * lit + 250 * spec * 0.55, G = col[1] * lit + 225 * spec * 0.5, B = col[2] * lit + 170 * spec * 0.35;
+          ctx.fillStyle = 'rgb(' + Math.min(255, R | 0) + ',' + Math.min(255, G | 0) + ',' + Math.min(255, B | 0) + ')';
+          ctx.beginPath(); ctx.moveTo(prev.l[0], prev.l[1]); ctx.lineTo(p.l[0], p.l[1]); ctx.lineTo(p.rr[0], p.rr[1]); ctx.lineTo(prev.rr[0], prev.rr[1]); ctx.closePath(); ctx.fill(); ctx.strokeStyle = ctx.fillStyle; ctx.stroke();
+        }
+        prev = p;
+      }
+    }
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+    g.addColorStop(0, 'rgba(255,248,225,1)'); g.addColorStop(0.15, 'rgba(255,214,130,0.8)'); g.addColorStop(1, 'rgba(255,190,90,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, 60, 0, 7); ctx.fill();
+  };
+}
+</script>
+<script>// Idea 3: Ink from a single point. Gold and blue ink bloom out of one pinpoint into dark water,
+// then the whole body of water turns the other way around that point. Moving the mouse stirs it.
+function Ink(ctx, W, H) {
+  var cx = W / 2, cy = H * 0.46, P = [], N = 2600, s = 3, mx = -1e4, my = -1e4, pmx = 0, pmy = 0, mv = 0, started = false;
+  function rn() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+  var cols = ['rgba(246,192,72,A)', 'rgba(52,110,230,A)', 'rgba(255,226,150,A)', 'rgba(30,70,180,A)', 'rgba(120,170,255,A)'];
+  function sm(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
+  function spawn(p, t) {
+    var a = rn() * 6.2832, sp = 120 + 220 * rn();
+    p.x = cx + Math.cos(a) * 2; p.y = cy + Math.sin(a) * 2; p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp;
+    var band = Math.floor((t * 0.9 + rn() * 0.6)) % 5; p.c = cols[band]; p.life = 4 + 5 * rn(); p.age = 0;
+  }
+  for (var i = 0; i < N; i++) P.push({ born: rn() * 3.2, x: cx, y: cy, vx: 0, vy: 0, age: 0, life: 1, c: cols[0], alive: false });
+  function pot(x, y, t) { return Math.sin(x * 0.0042 + t * 0.21) * Math.cos(y * 0.0051 - t * 0.17) + 0.6 * Math.sin((x - y) * 0.0068 + t * 0.33) + 0.35 * Math.cos(x * 0.011 + y * 0.009 - t * 0.4); }
+  this.move = function (x, y) { if (mx > -1e3) { mv = Math.min(1, mv + Math.hypot(x - mx, y - my) / 80); } pmx = mx; pmy = my; mx = x; my = y; };
+  this.leave = function () { mx = -1e4; };
+  this.draw = function (t, dt) {
+    if (!started) { ctx.fillStyle = '#040917'; ctx.fillRect(0, 0, W, H); started = true; }
+    ctx.fillStyle = 'rgba(4,9,23,0.035)'; ctx.fillRect(0, 0, W, H);
+    mv *= Math.pow(0.2, dt);
+    var V = 1.0 - 2.0 * sm((t - 3.2) / 1.4);   // the whole water turns the other way
+    ctx.lineCap = 'round';
+    for (var i = 0; i < N; i++) {
+      var p = P[i];
+      if (!p.alive) { if (t > p.born) { spawn(p, t); p.alive = true; } else continue; }
+      var e = 1.5, px = pot(p.x, p.y + e, t) - pot(p.x, p.y - e, t), py = pot(p.x + e, p.y, t) - pot(p.x - e, p.y, t);
+      var fx = px / (2 * e) * 2600, fy = -py / (2 * e) * 2600;
+      var dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy) + 30;
+      var sw = V * 150 * Math.min(1, 380 / d); fx += -dy / d * sw + dx / d * 45; fy += dx / d * sw + dy / d * 45;
+      if (mx > -1e3) { var qx = p.x - mx, qy = p.y - my, q = qx * qx + qy * qy, k = Math.exp(-q / 9000) * (60 + 260 * mv); fx += -qy / 50 * k / 2; fy += qx / 50 * k / 2; }
+      p.vx += (fx - p.vx) * Math.min(1, dt * 1.2); p.vy += (fy - p.vy) * Math.min(1, dt * 1.2);
+      var ox = p.x, oy = p.y; p.x += p.vx * dt; p.y += p.vy * dt; p.age += dt;
+      var a = Math.min(1, p.age / 0.4) * Math.max(0, 1 - p.age / p.life) * 0.2;
+      if (a > 0.005) { ctx.strokeStyle = p.c.replace('A', a.toFixed(3)); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+      if (p.age > p.life || p.x < -50 || p.x > W + 50 || p.y < -50 || p.y > H + 50) spawn(p, t);
+    }
+    var gl = 0.5 + 0.5 * Math.exp(-Math.pow((t - 3.2) / 0.5, 2));
+    var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+    g.addColorStop(0, 'rgba(255,250,230,' + gl + ')'); g.addColorStop(1, 'rgba(255,220,140,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, 14, 0, 7); ctx.fill();
+  };
+}
+</script>
+<script>
+(function () {
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d'), titles = document.getElementById('titles');
+  var makers = [Leaves, Silk, Ink], cur = 0, scene, t0, last, W, H;
+  var q = location.hash.match(/(\d)/); if (q) cur = Math.min(2, +q[1] - 1);
+  function start() {
+    var dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scene = new makers[cur](ctx, W, H); t0 = null; titles.classList.remove('on');
+    document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('sel', b.dataset.i == cur); });
+  }
+  function frame(now) {
+    if (t0 === null) { t0 = now; last = now; }
+    var t = (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
+    scene.draw(t, dt);
+    if (t > 4.6) titles.classList.add('on');
+    requestAnimationFrame(frame);
+  }
+  document.querySelectorAll('nav button').forEach(function (b) {
+    b.addEventListener('click', function () { if (b.dataset.i !== 'r') { cur = +b.dataset.i; location.hash = cur + 1; } start(); });
+  });
+  addEventListener('pointermove', function (e) { scene.move(e.clientX, e.clientY); });
+  document.addEventListener('pointerleave', function () { scene.leave(); });
+  addEventListener('resize', start);
+  start(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
