@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PIVOT: opening ideas 7 to 9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=Spectral:ital,wght@0,200;0,300;1,300&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #050A18; overflow: hidden; font-family: "Hanken Grotesk", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; display: block; }
+  .scrim { position: fixed; left: 0; right: 0; bottom: 0; height: 50vh; background: linear-gradient(to top, rgba(4,8,22,0.94) 0%, rgba(4,8,22,0.75) 45%, rgba(4,8,22,0) 100%); pointer-events: none; }
+  .titles { position: fixed; left: 0; right: 0; bottom: 13vh; text-align: center; pointer-events: none; }
+  .pivot { font-family: Spectral, Georgia, serif; font-weight: 300; font-size: clamp(64px, 11vw, 150px); letter-spacing: 0.16em; padding-left: 0.16em; line-height: 1; margin: 0;
+    background: linear-gradient(100deg, #8A5A12 0%, #E9B949 22%, #FFF1C4 38%, #D9A53A 52%, #9C6A18 70%, #F0C760 88%, #8A5A12 100%); background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.9)) drop-shadow(0 0 30px rgba(0,0,0,0.7));
+    animation: shimmer 9s linear infinite; }
+  @keyframes shimmer { to { background-position: -250% 0; } }
+  .sub { font-family: Spectral, Georgia, serif; font-style: italic; font-weight: 300; color: #EADFC8; font-size: clamp(18px, 2vw, 28px); margin: 0.6em 0 0.5em; }
+  .by { color: #C9BFA8; font-size: 15px; letter-spacing: 0.05em; margin: 0; }
+  .fc { color: #D9A53A; font-size: 12px; letter-spacing: 0.3em; margin: 0.9em 0 0; }
+  .titles > * { opacity: 0; transform: translateY(14px); transition: opacity 1.4s ease, transform 1.4s ease; }
+  .on > * { opacity: 1; transform: none; }
+  .own .pivot { display: none; }
+  .on .sub { transition-delay: 0.5s; } .on .by { transition-delay: 0.9s; } .on .fc { transition-delay: 1.2s; }
+  nav { position: fixed; top: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 5; flex-wrap: wrap; }
+  nav button { font: 500 14px "Hanken Grotesk", sans-serif; color: #EADFC8; background: rgba(8,14,36,0.6); border: 1px solid rgba(217,165,58,0.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+  nav button.sel { background: #D9A53A; color: #0A1230; border-color: #D9A53A; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="scrim"></div>
+<div class="titles" id="titles">
+  <h1 class="pivot">PIVOT</h1>
+  <p class="sub">The Art of Moving Beyond Our Familiar Selves</p>
+  <p class="by">By Rebecca A. Tavangar</p>
+  <p class="fc">FORTHCOMING 2027</p>
+</div>
+<nav>
+  <button data-i="0">7. The book</button>
+  <button data-i="1">8. The hourglass</button>
+  <button data-i="2">9. Tacking</button>
+  <button data-i="r">Replay</button>
+</nav>
+<script>// Idea 7: A book turning. Pages turn on the spine, fast at first and then slowing, until the book
+// opens on its title page. Afterward, moving the mouse left or right turns a page that way.
+function Book(ctx, W, H) {
+  this.ownTitle = true;
+  var pw = Math.min(W * 0.3, H * 0.4), ph = pw * 1.32, cx = W / 2, cy = H * 0.4, top = cy - ph / 2, flips = [], n = 11, done = false, lastX = null, cool = 0;
+  for (var i = 0; i < n; i++) { var u = i / (n - 1), s = 0.25 + 2.6 * (1 - Math.pow(1 - u, 2.2)); flips.push({ start: s, dur: 0.35 + 0.75 * u, dir: 1 }); }
+  var extra = [];
+  this.move = function (x) {
+    if (!done) return;
+    if (lastX !== null && Math.abs(x - lastX) > 25 && cool <= 0) { extra.push({ t0: tNow, dur: 0.9, dir: x > lastX ? -1 : 1 }); cool = 0.35; lastX = x; }
+    if (lastX === null) lastX = x;
+  };
+  this.leave = function () { lastX = null; };
+  var tNow = 0;
+  function ease(u) { u = Math.max(0, Math.min(1, u)); return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; }
+  function lines(x0, x1, yy, dark) {
+    ctx.strokeStyle = dark ? 'rgba(60,45,20,0.25)' : 'rgba(60,45,20,0.22)'; ctx.lineWidth = 1;
+    for (var k = 0; k < 14; k++) { var y = yy + ph * 0.14 + k * ph * 0.052, l = (k % 5 === 4) ? 0.55 : 1; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + (x1 - x0) * l, y); ctx.stroke(); }
+  }
+  function paper(x0, y0, w, h, shade) {
+    var g = ctx.createLinearGradient(x0, 0, x0 + w, 0);
+    g.addColorStop(0, 'rgb(' + (238 * shade | 0) + ',' + (222 * shade | 0) + ',' + (184 * shade | 0) + ')'); g.addColorStop(1, 'rgb(' + (250 * shade | 0) + ',' + (238 * shade | 0) + ',' + (205 * shade | 0) + ')');
+    return g;
+  }
+  function page(a, front) { // a: 0 = lying right, PI = lying left
+    var c = Math.cos(a), s = Math.sin(a), ex = cx + pw * c, lift = s * ph * 0.06, grow = 1 + s * 0.08;
+    var y0 = top - lift - (grow - 1) * ph / 2, y1 = top + ph - lift + (grow - 1) * ph / 2;
+    var shade = 0.55 + 0.45 * Math.abs(c);
+    ctx.fillStyle = paper(Math.min(cx, ex), 0, Math.abs(ex - cx) + 1, 0, shade);
+    ctx.beginPath(); ctx.moveTo(cx, top); ctx.lineTo(ex, y0); ctx.lineTo(ex, y1); ctx.lineTo(cx, top + ph); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(217,165,58,' + (0.5 + 0.5 * (1 - Math.abs(c))) + ')'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ex, y0); ctx.lineTo(ex, y1); ctx.stroke();
+  }
+  this.draw = function (t, dt) {
+    tNow = t; cool -= dt;
+    var bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7); bg.addColorStop(0, '#16295C'); bg.addColorStop(0.6, '#081230'); bg.addColorStop(1, '#030714');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    // cover, gold edged
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 24;
+    ctx.fillStyle = '#16307F'; ctx.fillRect(cx - pw - 14, top - 12, pw * 2 + 28, ph + 24); ctx.restore();
+    ctx.strokeStyle = '#D9A53A'; ctx.lineWidth = 2; ctx.strokeRect(cx - pw - 8, top - 6, pw * 2 + 16, ph + 12);
+    // page edges (stacks)
+    for (var k = 4; k >= 1; k--) { ctx.fillStyle = k % 2 ? '#E6D3A6' : '#D8C190'; ctx.fillRect(cx - pw - k * 1.5, top + k, pw, ph - k); ctx.fillRect(cx + k * 1.5, top + k, pw, ph - k); }
+    // resting spreads
+    ctx.fillStyle = paper(cx - pw, 0, pw, 0, 0.93); ctx.fillRect(cx - pw, top, pw, ph);
+    ctx.fillStyle = paper(cx, 0, pw, 0, 0.98); ctx.fillRect(cx, top, pw, ph);
+    var settled = t > flips[n - 1].start + flips[n - 1].dur; done = settled;
+    if (!settled) { lines(cx - pw * 0.88, cx - pw * 0.12, top, true); lines(cx + pw * 0.12, cx + pw * 0.88, top, false); }
+    else {
+      lines(cx - pw * 0.88, cx - pw * 0.12, top, true);
+      var fa = Math.min(1, (t - (flips[n - 1].start + flips[n - 1].dur)) / 1.2);
+      ctx.save(); ctx.globalAlpha = fa; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      var g = ctx.createLinearGradient(cx + pw * 0.2, top + ph * 0.3, cx + pw * 0.8, top + ph * 0.5); g.addColorStop(0, '#9C6A18'); g.addColorStop(0.45, '#E9B949'); g.addColorStop(1, '#8A5A12');
+      ctx.fillStyle = g; ctx.font = '300 ' + (pw * 0.2 | 0) + 'px Spectral, Georgia, serif'; ctx.fillText('PIVOT', cx + pw / 2, top + ph * 0.4);
+      ctx.fillStyle = '#1B3C9E'; ctx.beginPath(); ctx.arc(cx + pw / 2, top + ph * 0.56, 4, 0, 7); ctx.fill();
+      ctx.restore();
+    }
+    // the turning pages
+    var active = [];
+    for (var i = 0; i < n; i++) { var f = flips[i], u = (t - f.start) / f.dur; if (u > 0 && u < 1) active.push(Math.PI * ease(u)); }
+    for (i = 0; i < extra.length; i++) { var e = extra[i], v = (t - e.t0) / e.dur; if (v > 0 && v < 1) active.push(e.dir > 0 ? Math.PI * ease(v) : Math.PI * (1 - ease(v))); }
+    extra = extra.filter(function (e) { return t - e.t0 < e.dur; });
+    active.sort(function (a, b) { return Math.abs(Math.cos(b)) - Math.abs(Math.cos(a)); });
+    for (i = 0; i < active.length; i++) page(active[i]);
+    // spine shadow and the gold pivot of the spine
+    var sg = ctx.createLinearGradient(cx - 26, 0, cx + 26, 0); sg.addColorStop(0, 'rgba(40,25,5,0)'); sg.addColorStop(0.5, 'rgba(40,25,5,0.35)'); sg.addColorStop(1, 'rgba(40,25,5,0)');
+    ctx.fillStyle = sg; ctx.fillRect(cx - 26, top, 52, ph);
+    ctx.strokeStyle = '#D9A53A'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, top - 6); ctx.lineTo(cx, top + ph + 6); ctx.stroke();
+  };
+}
+</script>
+<script>// Idea 8: The hourglass. Gold sand runs down until little is left, then the glass pivots over on its
+// centre and the sand begins again. Afterward your mouse tilts the glass.
+function Hourglass(ctx, W, H) {
+  var cx = W / 2, cy = H * 0.36, r = Math.min(W, H) * 0.115, off = r * 1.08, ang = 0, av = 0, mx = null;
+  var amt = [0.62, 0.32], grains = [], s = 9; // amounts as fraction of a bulb, index 0 = bulb A, 1 = bulb B
+  function rn() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+  this.move = function (x) { mx = x; }; this.leave = function () { mx = null; };
+  function segArea(h) { h = Math.max(0, Math.min(2 * r, h)); return r * r * Math.acos((r - h) / r) - (r - h) * Math.sqrt(Math.max(0, 2 * r * h - h * h)); }
+  function levelFor(a) { var lo = 0, hi = 2 * r, target = a * Math.PI * r * r; for (var i = 0; i < 22; i++) { var m = (lo + hi) / 2; if (segArea(m) < target) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function sm(u) { u = Math.max(0, Math.min(1, u)); return u * u * (3 - 2 * u); }
+  function bulb(bx, by, a, glow) {
+    ctx.save(); ctx.beginPath(); ctx.arc(bx, by, r, 0, 6.2832); ctx.clip();
+    var g = ctx.createRadialGradient(bx - r * 0.3, by - r * 0.3, 0, bx, by, r); g.addColorStop(0, 'rgba(110,155,255,0.22)'); g.addColorStop(1, 'rgba(20,45,140,0.35)');
+    ctx.fillStyle = g; ctx.fillRect(bx - r, by - r, 2 * r, 2 * r);
+    var h = levelFor(a), yl = by + r - h;
+    var sg = ctx.createLinearGradient(0, yl, 0, by + r); sg.addColorStop(0, '#FFE39A'); sg.addColorStop(0.3, '#E9B442'); sg.addColorStop(1, '#9A6512');
+    ctx.fillStyle = sg; ctx.fillRect(bx - r, yl, 2 * r, h + 2);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(190,210,255,0.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, r, 0, 6.2832); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(bx, by, r * 0.82, 3.6, 4.3); ctx.stroke();
+    return yl;
+  }
+  this.draw = function (t, dt) {
+    var target;
+    if (t < 2.6) target = 0; else if (mx !== null && t > 5) target = Math.PI + (mx / W - 0.5) * 0.5; else target = Math.PI;
+    av += ((target - ang) * 14 - av * 4.5) * dt; ang += av * dt;
+    var ax = Math.sin(ang), ay = -Math.cos(ang); // direction from centre to bulb A
+    var A = [cx + ax * off, cy + ay * off], B = [cx - ax * off, cy - ay * off];
+    var upper = A[1] < B[1] ? 0 : 1, lower = 1 - upper, upright = Math.abs(Math.cos(ang)) > 0.93;
+    var rate = upright && amt[upper] > 0.004 ? 0.11 : 0;
+    amt[upper] -= rate * dt; amt[lower] += rate * dt;
+    var bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7); bg.addColorStop(0, '#152A60'); bg.addColorStop(0.6, '#081230'); bg.addColorStop(1, '#030714');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    // frame posts and caps
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang);
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 20;
+    var cap = ctx.createLinearGradient(-r * 1.4, 0, r * 1.4, 0); cap.addColorStop(0, '#8A5A12'); cap.addColorStop(0.4, '#F0C760'); cap.addColorStop(0.6, '#FFE9A8'); cap.addColorStop(1, '#8A5A12');
+    ctx.fillStyle = cap; ctx.fillRect(-r * 1.35, -off - r - r * 0.22, r * 2.7, r * 0.2); ctx.fillRect(-r * 1.35, off + r + r * 0.02, r * 2.7, r * 0.2);
+    ctx.shadowColor = 'transparent'; ctx.fillStyle = '#C88A1E';
+    ctx.fillRect(-r * 1.25, -off - r - r * 0.04, r * 0.09, 2 * off + 2 * r + r * 0.08); ctx.fillRect(r * 1.16, -off - r - r * 0.04, r * 0.09, 2 * off + 2 * r + r * 0.08);
+    ctx.restore();
+    var ylA = bulb(A[0], A[1], amt[0]), ylB = bulb(B[0], B[1], amt[1]);
+    // the falling stream and grains
+    if (rate > 0) {
+      var top = [cx, cy], bot = lower === 0 ? [A[0], ylA] : [B[0], ylB];
+      ctx.strokeStyle = 'rgba(240,190,80,0.85)'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(bot[0], bot[1]); ctx.stroke();
+      for (var g = 0; g < 3; g++) grains.push({ x: cx + (rn() - 0.5) * 3, y: cy, vy: 60 + rn() * 80, end: bot[1] });
+    }
+    ctx.fillStyle = 'rgba(255,230,160,0.9)';
+    grains = grains.filter(function (q) { q.vy += 900 * dt; q.y += q.vy * dt; if (q.y < q.end) { ctx.fillRect(q.x - 1, q.y, 2, 2); return true; } return false; });
+    // the pivot axle
+    var k = Math.exp(-Math.pow((t - 3.1) / 0.5, 2)), R = 6 + 26 * k, gl = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    gl.addColorStop(0, 'rgba(255,250,230,1)'); gl.addColorStop(0.3, 'rgba(255,214,120,0.8)'); gl.addColorStop(1, 'rgba(255,214,120,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
+  };
+}
+</script>
+<script>// Idea 9: Tacking. A boat cannot sail straight into the wind; it has to pivot. The boat turns through
+// the wind, the gold sail swings across, and it gathers speed on a new heading. Your mouse sets the side.
+function Sail(ctx, W, H) {
+  var hz = H * 0.46, bx = W * 0.5, by = H * 0.5, L = Math.min(W * 0.26, H * 0.34), head = 1, hv = 0, side = 1, mx = null, t0 = 0, drift = 0;
+  this.move = function (x) { mx = x; }; this.leave = function () { mx = null; };
+  this.draw = function (t, dt) {
+    if (t > 2.2 && t < 5) side = -1;
+    if (t >= 5 && mx !== null) side = mx > W / 2 ? 1 : -1;
+    hv += ((side * 0.92 - head) * 6 - hv * 2.6) * dt; head += hv * dt;
+    var c = head; // -1..1 : which way the boat faces (cos of heading); 0 = head to wind
+    // sky and sun
+    var sky = ctx.createLinearGradient(0, 0, 0, hz); sky.addColorStop(0, '#040B22'); sky.addColorStop(0.7, '#14307A'); sky.addColorStop(1, '#3A5FC4');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, hz);
+    var sun = ctx.createRadialGradient(W * 0.5, hz, 0, W * 0.5, hz, H * 0.5); sun.addColorStop(0, 'rgba(255,214,120,0.9)'); sun.addColorStop(0.08, 'rgba(255,190,80,0.55)'); sun.addColorStop(1, 'rgba(255,190,80,0)');
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, W, hz + 2);
+    // sea
+    var sea = ctx.createLinearGradient(0, hz, 0, H); sea.addColorStop(0, '#173A92'); sea.addColorStop(1, '#030A24'); ctx.fillStyle = sea; ctx.fillRect(0, hz, W, H - hz);
+    var gp = ctx.createLinearGradient(0, hz, 0, H); gp.addColorStop(0, 'rgba(255,210,110,0.6)'); gp.addColorStop(1, 'rgba(255,210,110,0)');
+    ctx.fillStyle = gp; ctx.beginPath(); ctx.moveTo(W * 0.47, hz); ctx.lineTo(W * 0.53, hz); ctx.lineTo(W * 0.75, H); ctx.lineTo(W * 0.25, H); ctx.closePath(); ctx.fill();
+    for (var i = 0; i < 26; i++) {
+      var y = hz + Math.pow(i / 26, 1.7) * (H - hz) + 2, amp = 1 + i * 0.35, len = 0.004 + 0.004 * (26 - i) / 26;
+      ctx.strokeStyle = 'rgba(' + (i % 3 ? '120,160,255' : '255,214,120') + ',' + (0.12 + i * 0.006).toFixed(3) + ')'; ctx.lineWidth = 1 + i * 0.05; ctx.beginPath();
+      for (var x = 0; x <= W; x += 12) { var yy = y + Math.sin(x * len * 6 + t * (1.2 + i * 0.05) + i) * amp; if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+      ctx.stroke();
+    }
+    // wake
+    var spd = Math.abs(c);
+    ctx.strokeStyle = 'rgba(255,240,200,' + (0.35 * spd).toFixed(3) + ')'; ctx.lineWidth = 2;
+    for (var w = 0; w < 2; w++) { ctx.beginPath(); ctx.moveTo(bx - c * L * 0.45, by + 4); ctx.quadraticCurveTo(bx - c * L * 0.9, by + 14 + w * 16, bx - c * L * 1.5, by + 10 + w * 30); ctx.stroke(); }
+    // hull: its outline narrows to a point as the bow turns to face us (head to wind)
+    var hw = L * 0.5 * Math.max(0.12, Math.abs(c)), dir = c >= 0 ? 1 : -1;
+    ctx.save(); ctx.translate(bx, by);
+    ctx.fillStyle = '#0B1A55'; ctx.beginPath(); ctx.moveTo(-hw, -L * 0.06); ctx.lineTo(hw, -L * 0.06); ctx.quadraticCurveTo(hw * 0.7 * dir > 0 ? hw * 0.95 : hw * 0.7, L * 0.08, hw * 0.55 * 1, L * 0.1); ctx.lineTo(-hw * 0.75, L * 0.1); ctx.quadraticCurveTo(-hw * 0.95, L * 0.04, -hw, -L * 0.06); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#D9A53A'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-hw, -L * 0.06); ctx.lineTo(hw, -L * 0.06); ctx.stroke();
+    // mast
+    var mh = L * 1.05; ctx.strokeStyle = '#E8C070'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, -L * 0.06); ctx.lineTo(0, -L * 0.06 - mh); ctx.stroke();
+    // sail: the boom sits on the side away from the wind and swings across as the boat pivots
+    var boom = -c * L * 0.62, belly = -c * L * 0.22 * (0.4 + 0.6 * spd), flutter = (1 - spd) * Math.sin(t * 28) * L * 0.04;
+    var sg = ctx.createLinearGradient(0, -mh, boom, 0); sg.addColorStop(0, '#FFF0C0'); sg.addColorStop(0.5, '#E9B442'); sg.addColorStop(1, '#9A6512');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.moveTo(0, -L * 0.06 - mh); ctx.quadraticCurveTo(belly + flutter, -L * 0.06 - mh * 0.45, boom, -L * 0.12); ctx.lineTo(0, -L * 0.12); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,240,200,0.7)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+    // reflection
+    ctx.save(); ctx.globalAlpha = 0.18; ctx.translate(bx, by + L * 0.2); ctx.scale(1, -0.5);
+    ctx.fillStyle = '#E9B442'; ctx.beginPath(); ctx.moveTo(0, -mh * 0.9); ctx.quadraticCurveTo(belly, -mh * 0.4, boom, 0); ctx.lineTo(0, 0); ctx.closePath(); ctx.fill(); ctx.restore();
+  };
+}
+</script>
+<script>
+(function () {
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d'), titles = document.getElementById('titles');
+  var makers = [Book, Hourglass, Sail], cur = 0, scene, t0, last, W, H;
+  var q = location.hash.match(/(\d)/); if (q) cur = Math.min(2, +q[1] - 1);
+  function start() {
+    var dpr = Math.min(2, window.devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scene = new makers[cur](ctx, W, H); t0 = null; titles.classList.remove('on'); titles.classList.toggle('own', !!scene.ownTitle);
+    document.querySelectorAll('nav button').forEach(function (b) { b.classList.toggle('sel', b.dataset.i == cur); });
+  }
+  function frame(now) {
+    if (t0 === null) { t0 = now; last = now; }
+    var t = (now - t0) / 1000, dt = Math.min(0.05, (now - last) / 1000); last = now;
+    scene.draw(t, dt);
+    if (t > 4.6) titles.classList.add('on');
+    requestAnimationFrame(frame);
+  }
+  document.querySelectorAll('nav button').forEach(function (b) {
+    b.addEventListener('click', function () { if (b.dataset.i !== 'r') { cur = +b.dataset.i; location.hash = cur + 1; } start(); });
+  });
+  addEventListener('pointermove', function (e) { scene.move(e.clientX, e.clientY); });
+  document.addEventListener('pointerleave', function () { scene.leave(); });
+  addEventListener('resize', start);
+  var go = false; function begin() { if (go) return; go = true; start(); requestAnimationFrame(frame); }
+  if (document.fonts && document.fonts.load) document.fonts.load('300 100px Spectral').then(begin, begin); setTimeout(begin, 1200);
+})();
+</script>
+</body>
+</html>
