@@ -216,6 +216,7 @@
     transition: clip-path 1.6s cubic-bezier(.4,0,.2,1) 1.7s, transform 1.6s cubic-bezier(.4,0,.2,1) 1.7s, opacity 1.2s ease 1.7s; }
   .hero.subs .i-when { clip-path: inset(0 0 0 0); transform: none; opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .i-when { transition: none; } }
+  html { background: #0B1533; }
 </style>
 </head>
 <body>
@@ -378,15 +379,6 @@
     });
   })();
 </script>
-<script src="synapse.js?v=5"></script>
-<script>
-  (function () {
-    var s = document.querySelector('.second');
-    if (!s) return;
-    if (!('IntersectionObserver' in window)) { s.classList.add('shown'); return; }
-    var o = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { s.classList.add('shown'); o.disconnect(); } }); }, { threshold: 0.35 });
-    o.observe(s);
-  })();
-</script>
+<script src="synapse.js?v=6"></script>
 </body>
 </html>
