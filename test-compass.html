@@ -26,9 +26,9 @@ function mixa(a,b,k,al){return 'rgba('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.r
 function light(t){return dawn?sm((t-2.6)/DAWN[scene]):1;}
 function bg(t){var k=light(t),g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.75);g.addColorStop(0,mixc([22,40,92],[255,250,238],k));g.addColorStop(1,mixc([11,21,51],[236,225,200],k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,236,170,'+a+')');g.addColorStop(.35,'rgba(232,170,50,'+(a*.5)+')');g.addColorStop(1,'rgba(232,170,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-/* Compass: the needle turns on its pin, searches, then settles on true north. After that it glides toward the mouse with no overshoot, and glides back to north when you stop. */
+/* Compass: the needle makes one slow, graceful turn to true north and the centre pin blooms with light. After that it glides toward the mouse with no overshoot, and glides back to north when you stop. */
 function compass(t,dt){
- var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a;
+ var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a,N=-Math.PI/2;
  bg(t);
  var ink=mixc([200,210,240],[26,42,92],k);
  ctx.strokeStyle='#C8901F';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.stroke();
@@ -37,11 +37,13 @@ function compass(t,dt){
  for(i=0;i<8;i++){a=i*Math.PI/4-Math.PI/2;var L=i%2?R*0.42:R*0.7,w=R*0.07;ctx.fillStyle=i%2?mixa([110,150,240],[47,91,208],k,0.3):'rgba(200,144,31,0.3)';ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*L,cy+Math.sin(a)*L);ctx.lineTo(cx+Math.cos(a+1.5708)*w,cy+Math.sin(a+1.5708)*w);ctx.lineTo(cx-Math.cos(a+1.5708)*w,cy-Math.sin(a+1.5708)*w);ctx.closePath();ctx.fill();}
  ctx.fillStyle='#A86E14';ctx.font='300 '+Math.round(R*0.16)+'px Spectral, Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',cx,cy-R*1.13);
  if(t<2.6){
-  st.tg=t<1.2?-2.3+0.05*Math.sin(t*9):-2.3+1.6*Math.sin((t-1.2)*3.2);
-  st.v+=((st.tg-st.a)*30-st.v*5)*dt;st.a+=st.v*dt;
+  st.tg=t<0.8?-2.3:-2.3+((N+0.1)-(-2.3))*sm((t-0.8)/1.5);
+  if(t>2.3)st.tg+=(N-st.tg)*Math.min(1,dt*4);
+  var K0=14,D0=2*Math.sqrt(K0);
+  st.v+=((st.tg-st.a)*K0-st.v*D0)*dt;st.a+=st.v*dt;
  } else {
   var rd=dt/SPEEDS[0];
-  var fol=mx!==null&&performance.now()-lastMove<1400,want=fol?Math.atan2(my-cy,mx-cx):-Math.PI/2;
+  var fol=mx!==null&&performance.now()-lastMove<1400,want=fol?Math.atan2(my-cy,mx-cx):N;
   st.tg+=Math.atan2(Math.sin(want-st.tg),Math.cos(want-st.tg))*Math.min(1,rd*5);
   var K=7,D=2*Math.sqrt(K);
   st.v+=((st.tg-st.a)*K-st.v*D)*rd;st.v=Math.max(-5,Math.min(5,st.v));st.a+=st.v*rd;
@@ -53,8 +55,12 @@ function compass(t,dt){
  g=ctx.createLinearGradient(cx,cy,cx-c*NL,cy-s*NL);g.addColorStop(0,'#1B3C9E');g.addColorStop(1,'#4A78E8');
  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-c*NL,cy-s*NL);ctx.lineTo(cx+px*nw,cy+py*nw);ctx.lineTo(cx-px*nw,cy-py*nw);ctx.closePath();ctx.fill();
  ctx.restore();
- var kk=Math.exp(-Math.pow((t-2.9)/0.5,2));glow(cx,cy,R*(0.12+0.5*kk),0.9);
- ctx.fillStyle='#C8901F';ctx.beginPath();ctx.arc(cx,cy,R*0.045,0,6.2832);ctx.fill();ctx.fillStyle='#FFF6DA';ctx.beginPath();ctx.arc(cx,cy,R*0.02,0,6.2832);ctx.fill();
+ var bloom=Math.exp(-Math.pow((t-2.9)/0.7,2)),steady=sm((t-2.4)/0.8)*(0.85+0.15*Math.sin(t*1.2));
+ ctx.save();ctx.globalCompositeOperation=k>0.5?'source-over':'lighter';
+ glow(cx,cy,R*(0.1+0.22*steady+0.75*bloom),Math.min(1,0.45+0.4*steady+0.5*bloom));
+ glow(cx,cy,R*(0.06+0.08*steady+0.2*bloom),1);
+ ctx.restore();
+ ctx.fillStyle='#C8901F';ctx.beginPath();ctx.arc(cx,cy,R*0.045,0,6.2832);ctx.fill();ctx.fillStyle='rgba(255,250,230,'+(0.7+0.3*Math.max(steady,bloom))+')';ctx.beginPath();ctx.arc(cx,cy,R*(0.02+0.012*Math.max(steady,bloom)),0,6.2832);ctx.fill();
 }
 /* Synapse: a signal runs a worn path (habit), pauses at one neuron, a new gold connection grows from it, sparks, and the signal takes the new way. */
 var NODES=[];(function(){var s=17;function rn(){s=(s*16807)%2147483647;return s/2147483647;}for(var i=0;i<46;i++)NODES.push([0.04+0.92*rn(),0.06+0.6*rn()]);})();
