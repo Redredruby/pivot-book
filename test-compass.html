@@ -26,7 +26,7 @@ function mixa(a,b,k,al){return 'rgba('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.r
 function light(t){return dawn?sm((t-2.6)/2.4):1;}
 function bg(t){var k=light(t),g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.75);g.addColorStop(0,mixc([22,40,92],[255,250,238],k));g.addColorStop(1,mixc([11,21,51],[236,225,200],k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,236,170,'+a+')');g.addColorStop(.35,'rgba(232,170,50,'+(a*.5)+')');g.addColorStop(1,'rgba(232,170,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-/* Compass: the needle turns on its pin, searches, then settles on true north. After that it glides toward the mouse while you move it, and eases back to north when you stop. */
+/* Compass: the needle turns on its pin, searches, then settles on true north. After that it glides slowly toward the mouse, with no overshoot, and glides back to north when you stop. */
 function compass(t,dt){
  var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a;
  bg(t);
@@ -36,11 +36,16 @@ function compass(t,dt){
  for(i=0;i<72;i++){a=i/72*6.2832;var l=i%18===0?0.14:(i%6===0?0.08:0.04);ctx.strokeStyle=i%18===0?'#C8901F':ink;ctx.lineWidth=i%18===0?2:1;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.9,cy+Math.sin(a)*R*0.9);ctx.lineTo(cx+Math.cos(a)*R*(0.9-l),cy+Math.sin(a)*R*(0.9-l));ctx.stroke();}
  for(i=0;i<8;i++){a=i*Math.PI/4-Math.PI/2;var L=i%2?R*0.42:R*0.7,w=R*0.07;ctx.fillStyle=i%2?mixa([110,150,240],[47,91,208],k,0.3):'rgba(200,144,31,0.3)';ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*L,cy+Math.sin(a)*L);ctx.lineTo(cx+Math.cos(a+1.5708)*w,cy+Math.sin(a+1.5708)*w);ctx.lineTo(cx-Math.cos(a+1.5708)*w,cy-Math.sin(a+1.5708)*w);ctx.closePath();ctx.fill();}
  ctx.fillStyle='#A86E14';ctx.font='300 '+Math.round(R*0.16)+'px Spectral, Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',cx,cy-R*1.13);
- if(t<1.2){st.tg=-2.3+0.05*Math.sin(t*9);}
- else if(t<2.6){st.tg=-2.3+1.6*Math.sin((t-1.2)*3.2);}
- else{var fol=mx!==null&&performance.now()-lastMove<1200,want=fol?Math.atan2(my-cy,mx-cx):-Math.PI/2;st.tg+=Math.atan2(Math.sin(want-st.tg),Math.cos(want-st.tg))*Math.min(1,dt*1.6);}
- var stiff=t<2.6?30:5,damp=t<2.6?5:4.2;
- st.v+=((st.tg-st.a)*stiff-st.v*damp)*dt;st.a+=st.v*dt;
+ if(t<2.6){
+  st.tg=t<1.2?-2.3+0.05*Math.sin(t*9):-2.3+1.6*Math.sin((t-1.2)*3.2);
+  st.v+=((st.tg-st.a)*30-st.v*5)*dt;st.a+=st.v*dt;
+ } else {
+  var rd=dt/SPEEDS[0];
+  var fol=mx!==null&&performance.now()-lastMove<1400,want=fol?Math.atan2(my-cy,mx-cx):-Math.PI/2;
+  st.tg+=Math.atan2(Math.sin(want-st.tg),Math.cos(want-st.tg))*Math.min(1,rd*1.5);
+  var K=2.2,D=2*Math.sqrt(K);
+  st.v+=((st.tg-st.a)*K-st.v*D)*rd;st.v=Math.max(-2.2,Math.min(2.2,st.v));st.a+=st.v*rd;
+ }
  var c=Math.cos(st.a),s=Math.sin(st.a),NL=R*0.78,nw=R*0.075,px=-s,py=c;
  ctx.save();ctx.shadowColor='rgba(0,0,20,0.35)';ctx.shadowBlur=18;ctx.shadowOffsetY=10;
  var g=ctx.createLinearGradient(cx,cy,cx+c*NL,cy+s*NL);g.addColorStop(0,'#A86E14');g.addColorStop(1,'#F2CF72');
