@@ -4,8 +4,8 @@
 html,body{margin:0;height:100%;overflow:hidden;font-family:"Hanken Grotesk",system-ui,sans-serif;background:#F7F1E3}
 canvas{position:fixed;inset:0;display:block}
 .titles{position:fixed;left:0;right:0;bottom:7vh;text-align:center;pointer-events:none}
-.titles>*{opacity:0;transform:translateY(12px);transition:opacity 1s ease,transform 1s ease}
-.on>*{opacity:1;transform:none}.on .sub{transition-delay:.3s}.on .by{transition-delay:.55s}.on .fc{transition-delay:.75s}
+.titles>*{opacity:0;transform:translateY(12px);transition:opacity 1.6s ease,transform 1.6s ease}
+.on>*{opacity:1;transform:none}.on .sub{transition-delay:.5s}.on .by{transition-delay:.9s}.on .fc{transition-delay:1.2s}
 .pivot{font-family:Spectral,Georgia,serif;font-weight:300;font-size:clamp(56px,9vw,124px);letter-spacing:.16em;padding-left:.16em;line-height:1;margin:0;background:linear-gradient(100deg,#7A4E0E,#C8901F 35%,#E9B949 50%,#A86E14 70%,#7A4E0E);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;font-weight:300;color:#1A2A5C;font-size:clamp(18px,2vw,26px);margin:.5em 0 .4em}
 .by{color:#3A4670;font-size:15px;letter-spacing:.05em;margin:0}
@@ -27,7 +27,7 @@ function mixa(a,b,k,al){return 'rgba('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.r
 function light(t){return dawn?sm((t-2.6)/DAWN[scene]):1;}
 function bg(t){var k=light(t),g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.75);g.addColorStop(0,mixc([22,40,92],[255,250,238],k));g.addColorStop(1,mixc([11,21,51],[236,225,200],k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,236,170,'+a+')');g.addColorStop(.35,'rgba(232,170,50,'+(a*.5)+')');g.addColorStop(1,'rgba(232,170,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-/* Compass: the needle rests pointing at five o'clock, then slowly sweeps clockwise all the way round to twelve, true north. As it arrives, the round pin itself turns from gold to bright white. */
+/* Compass: the needle rests pointing at five o'clock, then slowly sweeps clockwise all the way round to twelve, true north. As it arrives, the tiny centre of the gold pin turns bright white. */
 function compass(t){
  var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a;
  bg(t);
@@ -45,9 +45,9 @@ function compass(t){
  g=ctx.createLinearGradient(cx,cy,cx-c*NL,cy-s*NL);g.addColorStop(0,'#1B3C9E');g.addColorStop(1,'#4A78E8');
  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-c*NL,cy-s*NL);ctx.lineTo(cx+px*nw,cy+py*nw);ctx.lineTo(cx-px*nw,cy-py*nw);ctx.closePath();ctx.fill();
  ctx.restore();
- var pr=R*0.05,on=sm((t-SW1+0.2)/0.6);
- ctx.fillStyle=mixc([176,122,22],[255,255,255],on);ctx.beginPath();ctx.arc(cx,cy,pr,0,6.2832);ctx.fill();
- ctx.strokeStyle=mixc([140,95,15],[220,180,90],on);ctx.lineWidth=1.2;ctx.stroke();
+ var on=sm((t-SW1+0.2)/0.6);
+ ctx.fillStyle='#C8901F';ctx.beginPath();ctx.arc(cx,cy,R*0.045,0,6.2832);ctx.fill();
+ ctx.fillStyle=mixc([238,214,160],[255,255,255],on);ctx.beginPath();ctx.arc(cx,cy,R*0.02,0,6.2832);ctx.fill();
 }
 /* Synapse: a signal runs a worn path (habit), pauses at one neuron, a new gold connection grows from it, sparks, and the signal takes the new way. */
 var NODES=[];(function(){var s=17;function rn(){s=(s*16807)%2147483647;return s/2147483647;}for(var i=0;i<46;i++)NODES.push([0.04+0.92*rn(),0.06+0.6*rn()]);})();
