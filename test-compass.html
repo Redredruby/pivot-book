@@ -4,8 +4,8 @@
 html,body{margin:0;height:100%;overflow:hidden;font-family:"Hanken Grotesk",system-ui,sans-serif;background:#F7F1E3}
 canvas{position:fixed;inset:0;display:block}
 .titles{position:fixed;left:0;right:0;bottom:7vh;text-align:center;pointer-events:none}
-.titles>*{opacity:0;transform:translateY(12px);transition:opacity 1.4s ease,transform 1.4s ease}
-.on>*{opacity:1;transform:none}.on .sub{transition-delay:.5s}.on .by{transition-delay:.9s}.on .fc{transition-delay:1.2s}
+.titles>*{opacity:0;transform:translateY(12px);transition:opacity 1s ease,transform 1s ease}
+.on>*{opacity:1;transform:none}.on .sub{transition-delay:.3s}.on .by{transition-delay:.55s}.on .fc{transition-delay:.75s}
 .pivot{font-family:Spectral,Georgia,serif;font-weight:300;font-size:clamp(56px,9vw,124px);letter-spacing:.16em;padding-left:.16em;line-height:1;margin:0;background:linear-gradient(100deg,#7A4E0E,#C8901F 35%,#E9B949 50%,#A86E14 70%,#7A4E0E);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{font-family:Spectral,Georgia,serif;font-style:italic;font-weight:300;color:#1A2A5C;font-size:clamp(18px,2vw,26px);margin:.5em 0 .4em}
 .by{color:#3A4670;font-size:15px;letter-spacing:.05em;margin:0}
@@ -18,6 +18,7 @@ nav button.sel{background:#C8901F;color:#fff;border-color:#C8901F}
 <div class="titles" id="titles"><h1 class="pivot">PIVOT</h1><p class="sub">The Art of Moving Beyond Our Familiar Selves</p><p class="by">By Rebecca A. Tavangar</p><p class="fc">FORTHCOMING 2027</p></div>
 <nav><button data-s="0" data-d="0">Compass, light</button><button data-s="0" data-d="1">Compass, dusk to dawn</button><button data-s="1" data-d="0">Synapse, light</button><button data-s="1" data-d="1">Synapse, dusk to dawn</button><button data-r="1">Replay</button></nav>
 <script>
+var SPEED=1.6;
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),titles=document.getElementById('titles'),W,H,scene=0,dawn=0,t0=null,last=0,mx=null,my=null,st={};
 function sm(u){u=Math.max(0,Math.min(1,u));return u*u*(3-2*u);}
 function mixc(a,b,k){return 'rgb('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.round(a[1]+(b[1]-a[1])*k)+','+Math.round(a[2]+(b[2]-a[2])*k)+')';}
@@ -76,7 +77,7 @@ function synapse(t,dt){
 }
 function size(){var d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);}
 function start(){t0=null;titles.classList.remove('on');st={a:-2.3,v:0};document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('sel',b.dataset.s==scene&&b.dataset.d==dawn);});}
-function frame(now){if(t0===null){t0=now;last=now;}var t=(now-t0)/1000,dt=Math.min(0.05,(now-last)/1000);last=now;ctx.save();if(scene===0)compass(t,dt);else synapse(t,dt);ctx.restore();if(t>5.2)titles.classList.add('on');requestAnimationFrame(frame);}
+function frame(now){if(t0===null){t0=now;last=now;}var t=(now-t0)/1000*SPEED,dt=Math.min(0.05,(now-last)/1000)*SPEED;last=now;ctx.save();if(scene===0)compass(t,dt);else synapse(t,dt);ctx.restore();if(t>5.2)titles.classList.add('on');requestAnimationFrame(frame);}
 document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){if(!b.dataset.r){scene=+b.dataset.s;dawn=+b.dataset.d;location.hash=scene*2+dawn+1;}start();};});
 addEventListener('pointermove',function(e){if(scene===0&&mx!==null&&st.v!==undefined)st.v+=(e.clientX-mx)*0.003;mx=e.clientX;my=e.clientY;});
 document.addEventListener('pointerleave',function(){mx=null;});
