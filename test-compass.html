@@ -26,7 +26,7 @@ function mixa(a,b,k,al){return 'rgba('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.r
 function light(t){return dawn?sm((t-2.6)/DAWN[scene]):1;}
 function bg(t){var k=light(t),g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.75);g.addColorStop(0,mixc([22,40,92],[255,250,238],k));g.addColorStop(1,mixc([11,21,51],[236,225,200],k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,236,170,'+a+')');g.addColorStop(.35,'rgba(232,170,50,'+(a*.5)+')');g.addColorStop(1,'rgba(232,170,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-/* Compass: the needle makes one slow, graceful turn to true north and the centre pin blooms with light. After that it glides toward the mouse with no overshoot, and glides back to north when you stop. */
+/* Compass: the needle makes one slow, graceful turn to true north, and a tiny white spark lights inside the pin once it rests there. After that it glides toward the mouse, and glides back to north when you stop; the spark shows only when it points north. */
 function compass(t,dt){
  var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a,N=-Math.PI/2;
  bg(t);
@@ -55,12 +55,10 @@ function compass(t,dt){
  g=ctx.createLinearGradient(cx,cy,cx-c*NL,cy-s*NL);g.addColorStop(0,'#1B3C9E');g.addColorStop(1,'#4A78E8');
  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-c*NL,cy-s*NL);ctx.lineTo(cx+px*nw,cy+py*nw);ctx.lineTo(cx-px*nw,cy-py*nw);ctx.closePath();ctx.fill();
  ctx.restore();
- var bloom=Math.exp(-Math.pow((t-2.9)/0.7,2)),steady=sm((t-2.4)/0.8)*(0.85+0.15*Math.sin(t*1.2));
- ctx.save();ctx.globalCompositeOperation=k>0.5?'source-over':'lighter';
- glow(cx,cy,R*(0.1+0.22*steady+0.75*bloom),Math.min(1,0.45+0.4*steady+0.5*bloom));
- glow(cx,cy,R*(0.06+0.08*steady+0.2*bloom),1);
- ctx.restore();
- ctx.fillStyle='#C8901F';ctx.beginPath();ctx.arc(cx,cy,R*0.045,0,6.2832);ctx.fill();ctx.fillStyle='rgba(255,250,230,'+(0.7+0.3*Math.max(steady,bloom))+')';ctx.beginPath();ctx.arc(cx,cy,R*(0.02+0.012*Math.max(steady,bloom)),0,6.2832);ctx.fill();
+ var pr=R*0.045;
+ ctx.fillStyle='#C8901F';ctx.beginPath();ctx.arc(cx,cy,pr,0,6.2832);ctx.fill();
+ var align=Math.pow(Math.max(0,Math.cos(st.a-N)),40),spark=sm((t-2.7)/0.6)*align;
+ if(spark>0.01){var sg=ctx.createRadialGradient(cx,cy,0,cx,cy,pr*0.9);sg.addColorStop(0,'rgba(255,255,255,'+spark.toFixed(3)+')');sg.addColorStop(0.45,'rgba(255,255,255,'+(spark*0.75).toFixed(3)+')');sg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(cx,cy,pr*0.9,0,6.2832);ctx.fill();}
 }
 /* Synapse: a signal runs a worn path (habit), pauses at one neuron, a new gold connection grows from it, sparks, and the signal takes the new way. */
 var NODES=[];(function(){var s=17;function rn(){s=(s*16807)%2147483647;return s/2147483647;}for(var i=0;i<46;i++)NODES.push([0.04+0.92*rn(),0.06+0.6*rn()]);})();
