@@ -18,7 +18,7 @@ nav button.sel{background:#C8901F;color:#fff;border-color:#C8901F}
 <div class="titles" id="titles"><h1 class="pivot">PIVOT</h1><p class="sub">The Art of Moving Beyond Our Familiar Selves</p><p class="by">By Rebecca A. Tavangar</p><p class="fc">FORTHCOMING 2027</p></div>
 <nav><button data-s="0" data-d="0">Compass, light</button><button data-s="0" data-d="1">Compass, dusk to dawn</button><button data-s="1" data-d="0">Synapse, light</button><button data-s="1" data-d="1">Synapse, dusk to dawn</button><button data-r="1">Replay</button></nav>
 <script>
-var SPEEDS=[2.2,1.6];
+var SPEEDS=[2.2,1.6],lastMove=0;
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),titles=document.getElementById('titles'),W,H,scene=0,dawn=0,t0=null,last=0,mx=null,my=null,st={};
 function sm(u){u=Math.max(0,Math.min(1,u));return u*u*(3-2*u);}
 function mixc(a,b,k){return 'rgb('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.round(a[1]+(b[1]-a[1])*k)+','+Math.round(a[2]+(b[2]-a[2])*k)+')';}
@@ -26,7 +26,7 @@ function mixa(a,b,k,al){return 'rgba('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.r
 function light(t){return dawn?sm((t-2.6)/2.4):1;}
 function bg(t){var k=light(t),g=ctx.createRadialGradient(W/2,H*0.4,0,W/2,H*0.4,Math.max(W,H)*0.75);g.addColorStop(0,mixc([22,40,92],[255,250,238],k));g.addColorStop(1,mixc([11,21,51],[236,225,200],k));ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 function glow(x,y,r,a){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,236,170,'+a+')');g.addColorStop(.35,'rgba(232,170,50,'+(a*.5)+')');g.addColorStop(1,'rgba(232,170,50,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill();}
-/* Compass: the needle turns on its pin, searches, then settles on a new true north. Moving the mouse nudges it; it always comes back. */
+/* Compass: the needle turns on its pin, searches, then settles on true north. After that it points toward the mouse while you move it, and swings back to north when you stop. */
 function compass(t,dt){
  var cx=W/2,cy=H*0.37,R=Math.min(W,H)*0.22,k=light(t),i,a;
  bg(t);
@@ -36,8 +36,11 @@ function compass(t,dt){
  for(i=0;i<72;i++){a=i/72*6.2832;var l=i%18===0?0.14:(i%6===0?0.08:0.04);ctx.strokeStyle=i%18===0?'#C8901F':ink;ctx.lineWidth=i%18===0?2:1;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.9,cy+Math.sin(a)*R*0.9);ctx.lineTo(cx+Math.cos(a)*R*(0.9-l),cy+Math.sin(a)*R*(0.9-l));ctx.stroke();}
  for(i=0;i<8;i++){a=i*Math.PI/4-Math.PI/2;var L=i%2?R*0.42:R*0.7,w=R*0.07;ctx.fillStyle=i%2?mixa([110,150,240],[47,91,208],k,0.3):'rgba(200,144,31,0.3)';ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*L,cy+Math.sin(a)*L);ctx.lineTo(cx+Math.cos(a+1.5708)*w,cy+Math.sin(a+1.5708)*w);ctx.lineTo(cx-Math.cos(a+1.5708)*w,cy-Math.sin(a+1.5708)*w);ctx.closePath();ctx.fill();}
  ctx.fillStyle='#A86E14';ctx.font='300 '+Math.round(R*0.16)+'px Spectral, Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',cx,cy-R*1.13);
- var tg=t<1.2?-2.3+0.05*Math.sin(t*9):(t<2.6?-2.3+1.6*Math.sin((t-1.2)*3.2):-Math.PI/2);
- st.v+=((tg-st.a)*(t<2.6?30:14)-st.v*(t<2.6?5:2.2))*dt;st.a+=st.v*dt;
+ var tg;
+ if(t<1.2)tg=-2.3+0.05*Math.sin(t*9);
+ else if(t<2.6)tg=-2.3+1.6*Math.sin((t-1.2)*3.2);
+ else{var fol=mx!==null&&performance.now()-lastMove<900;tg=fol?Math.atan2(my-cy,mx-cx):-Math.PI/2;tg=st.a+Math.atan2(Math.sin(tg-st.a),Math.cos(tg-st.a));}
+ st.v+=((tg-st.a)*(t<2.6?30:16)-st.v*(t<2.6?5:2.6))*dt;st.a+=st.v*dt;
  var c=Math.cos(st.a),s=Math.sin(st.a),NL=R*0.78,nw=R*0.075,px=-s,py=c;
  ctx.save();ctx.shadowColor='rgba(0,0,20,0.35)';ctx.shadowBlur=18;ctx.shadowOffsetY=10;
  var g=ctx.createLinearGradient(cx,cy,cx+c*NL,cy+s*NL);g.addColorStop(0,'#A86E14');g.addColorStop(1,'#F2CF72');
@@ -79,7 +82,7 @@ function size(){var d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight
 function start(){t0=null;titles.classList.remove('on');st={a:-2.3,v:0};document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('sel',b.dataset.s==scene&&b.dataset.d==dawn);});}
 function frame(now){if(t0===null){t0=now;last=now;}var SP=SPEEDS[scene],t=(now-t0)/1000*SP,dt=Math.min(0.05,(now-last)/1000)*SP;last=now;ctx.save();if(scene===0)compass(t,dt);else synapse(t,dt);ctx.restore();if(t>5.2)titles.classList.add('on');requestAnimationFrame(frame);}
 document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){if(!b.dataset.r){scene=+b.dataset.s;dawn=+b.dataset.d;location.hash=scene*2+dawn+1;}start();};});
-addEventListener('pointermove',function(e){if(scene===0&&mx!==null&&st.v!==undefined)st.v+=(e.clientX-mx)*0.003;mx=e.clientX;my=e.clientY;});
+addEventListener('pointermove',function(e){lastMove=performance.now();mx=e.clientX;my=e.clientY;});
 document.addEventListener('pointerleave',function(){mx=null;});
 var h=Math.min(4,Math.max(1,parseInt(location.hash.slice(1))||1))-1;scene=h>>1;dawn=h&1;
 size();addEventListener('resize',size);start();requestAnimationFrame(frame);
